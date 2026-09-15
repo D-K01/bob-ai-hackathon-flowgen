@@ -2,12 +2,10 @@
 
 FLOWGEN
 
-| Field | Value |
-|---|---|
-| **Team Name** | [FLOWGEN] |
-| **Track** | [AI / DevOps / Sustainability / Open] |
-| **Team Lead** | [DRUPAD] — [email@ibm.com] |
-| **Members** | [NAMRA], [MANTHAN], [ANUJ] |
+| **Team Name** | FLOWGEN |
+| **Track** | AI / DevOps / Sustainability / Open |
+| **Team Lead** | DRUPAD — email@ibm.com |
+| **Members** | NAMRA, MANTHAN, ANUJ |
 
 ---
 
