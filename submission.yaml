@@ -26,8 +26,11 @@ submission:
   title: "Flowgen AI"                            # REQUIRED — Project display name, e.g., "SmartOps Dashboard"
 
   problem_statement: >                 # REQUIRED — 1-3 sentences. What problem? Who has it?
-    Replace this text with a concise description of the real-world problem
-    your project addresses and who experiences it.
+   Municipalities lose up to 30% of their treated drinking water due to undetected underground pipe bursts, 
+   costing cities billions. Worse, localized water contamination—such as chemical runoff, heavy metals, or 
+   bacterial growth—often goes unnoticed until citizens get sick. City operators lack a unified view to 
+   cross-reference hydraulic pressure drops with chemical sensor spikes, resulting in slow and disorganized 
+   containment responses.
 
   solution_summary: >                  # REQUIRED — 1-3 sentences. What did you build?
     Replace this text with a clear description of your solution
