@@ -41,9 +41,9 @@ submission:
 
 
   key_features:                        # REQUIRED — List 3 to 5 specific features you implemented
-    - "R"                               # e.g., "Real-time pipeline anomaly detection using watsonx.ai"
-    - ""
-    - ""
+    - "Feature 1: Real-Time Anomaly Detection Continuously monitors pressure, flow rate, and water-quality data to detect unusual patterns, hidden leaks, and possible pipe bursts."                               # e.g., "Real-time pipeline anomaly detection using watsonx.ai"
+    - "Feature 2: Contamination Detection & Classification Uses AI/ML to identify abnormal water-quality changes and flag possible chemical, heavy-metal, or biological contamination."
+    - "Feature 3: GIS-Based Risk Mapping Locates the affected area on a map and identifies downstream neighborhoods or pipeline sections that may be at immediate risk."
     - ""                               # optional 4th
     - ""                               # optional 5th
 
