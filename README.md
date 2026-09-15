@@ -104,14 +104,14 @@ cp .env.example .env
 
 > Be honest — judges appreciate transparency over overclaiming.
 
-- [Limitation 1: e.g., "Authentication is mocked — not production-ready"]
-- [Limitation 2: e.g., "Only tested on Chrome"]
-- [Limitation 3: e.g., "Feature X is scaffolded but not fully implemented"]
+• Prototype currently relies on simulated/test sensor data rather than live municipal sensors.
+• AI models require larger real-world datasets and field validation for production use.
+• Direct integration with municipal SCADA/GIS systems and physical valve-control infrastructure is not yet implemented.
 
 ---
 
 ## 🏅 What We're Most Proud Of
 
-[Tell the judges what part of your submission is strongest and worth paying close attention to.]
+Flowgen brings leak detection, water-quality intelligence and geographic risk analysis together in one system—turning disconnected sensor data into actionable decisions for water-network operators.
 
 ---
