@@ -18,11 +18,11 @@ graph TD
 
 | Component | Technology | Responsibility |
 |---|---|---|
-| Frontend | [e.g., React 18] | [Water-network dashboard, sensor visualization, GIS map and operator interaction |
-| Backend API | [e.g., FastAPI] | [Processes sensor data, applies detection logic and prepares results for the dashboard] |
-| AI / ML | [e.g., watsonx.ai] | [Anomaly detection, contamination analysis and risk assessment] |
-| Database | [e.g., PostgreSQL] | [Displays affected pipeline zones, incident locations and downstream risk areas] |
-| Notifications | [e.g., Slack API] | [e.g., Alerting on threshold breaches] |
+| Frontend | [HTML, CSS, JavaScript] | [Water-network dashboard, sensor visualization, GIS map and operator interaction |
+| Backend API | [avaScript / Python] | [Processes sensor data, applies detection logic and prepares results for the dashboard] |
+| AI / ML | [watsonx.ai / AI models | [Anomaly detection, contamination analysis and risk assessment] |
+| Database | [Simulated / local sensor dataset] | [Storing sensor readings, detected events and risk information] |
+| Notifications | [Dashboard alerts] | [Informing operators about detected leaks, contamination risks and high-priority incidents] |
 
 ## Data Flow
 
