@@ -72,19 +72,6 @@ Uses IBM technologies such as watsonx.ai, IBM Granite, IBM App Connect, IBM Inst
 > **Copy these exact steps from your [`docs/setup-guide.md`](docs/setup-guide.md)**
 
 ```bash
-# 1. Clone the repo
-git clone https://github.com/[your-repo].git
-cd [your-repo]
-
-# 2. Install dependencies
-[your install command here]
-
-# 3. Configure environment
-cp .env.example .env
-# Edit .env with your values
-
-# 4. Run the project
-[your run command here]
 ```
 
 ---
@@ -101,8 +88,6 @@ cp .env.example .env
 ---
 
 ## ⚠️ Known Limitations
-
-> Be honest — judges appreciate transparency over overclaiming.
 
 • Prototype currently relies on simulated/test sensor data rather than live municipal sensors.
 • AI models require larger real-world datasets and field validation for production use.
