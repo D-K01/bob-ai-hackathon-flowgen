@@ -2,16 +2,16 @@
 
 ## What We Built
 
-[Describe your solution in plain language. Avoid jargon — write as if explaining to a smart colleague unfamiliar with your tech stack.]
+We Built Flowgen AI which alerts Pune Municipal Corporation about any leaks or contamination in the water with the help of various sensors. Then an operator will assign a crew member to repair the said issue. The crew member will receive notification of task and complete details about it with location of the pipe which has faced the issue.
 
 ## How It Works
 
-[Explain the core mechanism step by step. A numbered list or simple flow works well here.]
-
-1. [Step 1: e.g., "User connects their GitHub repository via OAuth"]
-2. [Step 2: e.g., "The system ingests pipeline logs and feeds them to watsonx.ai"]
-3. [Step 3: e.g., "An anomaly score is computed and displayed on the dashboard"]
-4. [Step 4: e.g., "Alerts are sent to Slack when the score exceeds a threshold"]
+1. Pipe has some sort of leak / contamination.
+2. the sensors send data to the dashboard at PMC.
+3. Operator Assigns the issue to a crew member.
+4. Crew member gets the details about the problem.
+5. Crew member fixes the task and marks the task as completed.
+6. The issue is shown as resolved in the dashboard.
 
 ## Architecture Diagram
 
@@ -20,7 +20,7 @@
 [Optionally include a simple ASCII or Mermaid diagram here for quick reference.]
 
 ```
-[User] → [Frontend: React] → [API: FastAPI] → [watsonx.ai] → [Dashboard]
+[Sensor] → [Frontend: React] → [API: FastAPI] → [watsonx.ai] → [Dashboard]
                                     ↓
                              [PostgreSQL DB]
 ```
@@ -29,13 +29,10 @@
 
 | Decision | Rationale |
 |---|---|
-| [e.g., Used watsonx.ai for anomaly detection] | [e.g., Pre-trained models reduced time-to-value vs. building from scratch] |
-| [Decision 2] | [Rationale 2] |
-| [Decision 3] | [Rationale 3] |
+|  Used watsonx.ai for anomaly detection |  Pre-trained models reduced time-to-value vs. building from scratch |
 
 ## IBM Technologies Used
 
-[Explain specifically HOW you used each IBM technology — not just that you used it.]
 
-- **[IBM Tech 1, e.g., watsonx.ai]:** [How it was used — e.g., "Used the `ibm/granite-13b-instruct-v2` model via the Python SDK to classify anomaly types from log text."]
-- **[IBM Tech 2]:** [How it was used]
+- **IBM Tech 1 watsonx.ai:** "Used the `ibm/granite-13b-instruct-v2` model via the Python SDK to classify anomaly types from log text."
+  
