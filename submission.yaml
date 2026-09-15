@@ -33,8 +33,12 @@ submission:
    containment responses.
 
   solution_summary: >                  # REQUIRED — 1-3 sentences. What did you build?
-    Replace this text with a clear description of your solution
-    and how it addresses the problem above.
+   FLOWGEN is an AI-powered water-network monitoring system that combines real-time sensor data, 
+   machine-learning anomaly detection, contamination analysis, GIS-based risk mapping, and
+   predictive maintenance. It continuously analyzes pressure, flow, and water-quality data 
+   to detect hidden leaks or contamination, identify affected locations, predict downstream
+   risk, and provide operators with clear alerts and recommended actions for faster response.
+
 
   key_features:                        # REQUIRED — List 3 to 5 specific features you implemented
     - ""                               # e.g., "Real-time pipeline anomaly detection using watsonx.ai"
