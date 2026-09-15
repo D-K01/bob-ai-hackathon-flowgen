@@ -2,7 +2,6 @@
 
 ## System Architecture
 
-[Describe the overall architecture of your system. Replace the Mermaid diagram below with your actual architecture.]
 
 ```mermaid
 graph TD
@@ -18,11 +17,11 @@ graph TD
 
 | Component | Technology | Responsibility |
 |---|---|---|
-| Frontend | [HTML, CSS, JavaScript] | [Water-network dashboard, sensor visualization, GIS map and operator interaction |
-| Backend API | [avaScript / Python] | [Processes sensor data, applies detection logic and prepares results for the dashboard] |
-| AI / ML | [watsonx.ai / AI models | [Anomaly detection, contamination analysis and risk assessment] |
-| Database | [Simulated / local sensor dataset] | [Storing sensor readings, detected events and risk information] |
-| Notifications | [Dashboard alerts] | [Informing operators about detected leaks, contamination risks and high-priority incidents] |
+| Frontend | HTML, CSS, JavaScript | Water-network dashboard, sensor visualization, GIS map and operator interaction |
+| Backend API | JavaScript / Python] | Processes sensor data, applies detection logic and prepares results for the dashboard |
+| AI / ML | watsonx.ai / AI models | Anomaly detection, contamination analysis and risk assessment |
+| Database | Simulated / local sensor dataset | Storing sensor readings, detected events and risk information |
+| Notifications | Dashboard alerts | Informing operators about detected leaks, contamination risks and high-priority incidents |
 
 ## Data Flow
 
