@@ -42,4 +42,4 @@ graph TD
 
 ## Scalability Notes
 
-AquaSentinel can be extended from simulated/prototype data to large-scale IoT sensor networks. Cloud-based processing can support continuous data ingestion and distributed AI analysis across multiple pipeline zones, while GIS and municipal-system integrations can enable deployment across larger cities.
+Flowgen can be extended from simulated/prototype data to large-scale IoT sensor networks. Cloud-based processing can support continuous data ingestion and distributed AI analysis across multiple pipeline zones, while GIS and municipal-system integrations can enable deployment across larger cities.
