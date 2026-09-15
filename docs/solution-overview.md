@@ -17,12 +17,11 @@ We Built Flowgen AI which alerts Pune Municipal Corporation about any leaks or c
 
 > See [`architecture.md`](architecture.md) for the detailed diagram.
 
-[Optionally include a simple ASCII or Mermaid diagram here for quick reference.]
 
 ```
-[Sensor] → [Frontend: React] → [API: FastAPI] → [watsonx.ai] → [Dashboard]
+Sensor → Frontend: React → API: FastAPI → watsonx.ai → Dashboard
                                     ↓
-                             [PostgreSQL DB]
+                             PostgreSQL DB
 ```
 
 ## Key Design Decisions
