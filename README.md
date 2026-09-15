@@ -4,7 +4,7 @@ FLOWGEN
 
 | **Team Name** | FLOWGEN |
 | **Track** | AI / DevOps / Sustainability / Open |
-| **Team Lead** | DRUPAD — email@ibm.com |
+| **Team Lead** | DRUPAD — dhrupadkewlani52@gmail.com |
 | **Members** | NAMRA, MANTHAN, ANUJ |
 
 ---
