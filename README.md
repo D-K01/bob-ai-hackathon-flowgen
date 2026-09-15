@@ -23,17 +23,22 @@ FLOWGEN
 
 > In 2–3 sentences: What did you build? How does it solve the problem above?
 
-[Describe your solution clearly. Explain the core mechanism — what makes it work.]
+[FLOWGEN is an AI-powered water-network monitoring system that combines real-time sensor data, machine-learning anomaly detection, contamination analysis, GIS-based risk mapping, and predictive maintenance. It continuously analyzes pressure, flow, and water-quality data to detect hidden leaks or contamination, identify affected locations, predict downstream risk, and provide operators with clear alerts and recommended actions for faster response.]
 
 ---
 
 ## ✨ Key Features
 
-- **Feature 1:** [Brief description — e.g., "Real-time anomaly detection using watsonx.ai"]
-- **Feature 2:** [Brief description]
-- **Feature 3:** [Brief description]
-- **Feature 4:** [Optional]
-- **Feature 5:** [Optional]
+- **Feature 1:** [Real-Time Anomaly Detection
+Continuously monitors pressure, flow rate, and water-quality data to detect unusual patterns, hidden leaks, and possible pipe bursts."]
+- **Feature 2:** [Contamination Detection & Classification
+Uses AI/ML to identify abnormal water-quality changes and flag possible chemical, heavy-metal, or biological contamination.]
+- **Feature 3:** [GIS-Based Risk Mapping
+Locates the affected area on a map and identifies downstream neighborhoods or pipeline sections that may be at immediate risk.]
+- **Feature 4:** [Predictive Maintenance & Smart Alerts
+Analyzes historical and live data to identify high-risk pipes before failure and sends prioritized alerts with recommended response actions.]
+- **Feature 5:** [IBM AI & Cloud Integration
+Uses IBM technologies such as watsonx.ai, IBM Granite, IBM App Connect, IBM Instana, and IBM Cloud to support AI analysis, data integration, monitoring, and scalable deployment.]
 
 ---
 
