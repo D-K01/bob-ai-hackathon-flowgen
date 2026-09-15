@@ -1,0 +1,1000 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Flowgen AI — Live Demo</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;font-family:-apple-system,"Segoe UI",system-ui,sans-serif;background:#080c14;color:#e2e8f0;font-size:13px;overflow:hidden}
+
+/* ── TOP DEMO BAR ── */
+.demo-bar{height:52px;background:#050810;border-bottom:1px solid #1e2d40;display:flex;align-items:center;padding:0 16px;gap:10px;flex-shrink:0;z-index:2000;position:relative}
+.demo-logo{font-size:16px;font-weight:900;color:#38bdf8;display:flex;align-items:center;gap:7px;letter-spacing:-.4px}
+.demo-logo-box{width:24px;height:24px;background:linear-gradient(135deg,#0ea5e9,#6366f1);border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:12px}
+.demo-sep{width:1px;height:22px;background:#1e2d40}
+.demo-label{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:#334155}
+.demo-spacer{flex:1}
+.sim-section{display:flex;align-items:center;gap:8px}
+.sim-label{font-size:10px;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:.06em}
+.sim-btn{display:flex;align-items:center;gap:5px;padding:5px 13px;border-radius:6px;font-size:11px;font-weight:700;border:1px solid;cursor:pointer;font-family:inherit;transition:all .15s}
+.sim-btn.burst{background:rgba(239,68,68,.15);color:#fca5a5;border-color:rgba(239,68,68,.4)}
+.sim-btn.burst:hover{background:rgba(239,68,68,.3)}
+.sim-btn.contam{background:rgba(251,146,60,.12);color:#fdba74;border-color:rgba(251,146,60,.35)}
+.sim-btn.contam:hover{background:rgba(251,146,60,.25)}
+.sim-btn.resolve{background:rgba(34,197,94,.1);color:#86efac;border-color:rgba(34,197,94,.3)}
+.sim-btn.resolve:hover{background:rgba(34,197,94,.2)}
+.sim-btn.reset{background:rgba(56,189,248,.1);color:#38bdf8;border-color:rgba(56,189,248,.3)}
+.sim-btn.reset:hover{background:rgba(56,189,248,.2)}
+.sim-btn:disabled{opacity:.4;cursor:not-allowed}
+.sim-timer{font-size:11px;font-weight:700;color:#38bdf8;background:rgba(56,189,248,.1);border:1px solid rgba(56,189,248,.2);padding:4px 10px;border-radius:5px;min-width:70px;text-align:center;display:none}
+
+/* ── SPLIT LAYOUT ── */
+.split{display:flex;height:calc(100vh - 52px)}
+
+/* ── LEFT: DASHBOARD ── */
+.dash-side{flex:1;display:flex;flex-direction:column;min-width:0;border-right:2px solid #1e2d40}
+.dash-nav{height:40px;background:#0d1321;border-bottom:1px solid #1e2d40;display:flex;align-items:center;padding:0 12px;gap:10px;flex-shrink:0}
+.dash-nav-title{font-size:11px;font-weight:800;color:#38bdf8;display:flex;align-items:center;gap:5px}
+.stat-chip{display:flex;align-items:center;gap:4px;padding:2px 8px;border-radius:12px;font-size:10px;font-weight:700;border:1px solid}
+.stat-chip.cr{background:rgba(239,68,68,.15);color:#f87171;border-color:rgba(239,68,68,.3)}
+.stat-chip.hi{background:rgba(251,146,60,.12);color:#fb923c;border-color:rgba(251,146,60,.25)}
+.stat-chip.ok{background:rgba(34,197,94,.1);color:#4ade80;border-color:rgba(34,197,94,.2)}
+.dot{width:6px;height:6px;border-radius:50%}
+.dot.red{background:#ef4444;animation:dp 1.4s infinite;box-shadow:0 0 0 0 rgba(239,68,68,.6)}
+.dot.or{background:#f97316}
+.dot.gr{background:#22c55e}
+@keyframes dp{0%{box-shadow:0 0 0 0 rgba(239,68,68,.6)}70%{box-shadow:0 0 0 5px rgba(239,68,68,0)}100%{box-shadow:0 0 0 0 rgba(239,68,68,0)}}
+.dash-nav .sp{flex:1}
+.ibm-live{font-size:9px;font-weight:700;color:#22c55e;background:rgba(34,197,94,.08);border:1px solid rgba(34,197,94,.2);padding:2px 8px;border-radius:4px;display:flex;align-items:center;gap:4px}
+.dash-main{display:flex;flex:1;overflow:hidden}
+
+/* LEFT ALERT PANEL */
+.alert-panel{width:210px;background:#0a0f1a;border-right:1px solid #1e2d40;display:flex;flex-direction:column;flex-shrink:0}
+.ap-head{padding:8px 10px;border-bottom:1px solid #1e2d40;display:flex;justify-content:space-between;align-items:center}
+.ap-title{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:#475569}
+.ap-count{font-size:10px;font-weight:700;color:#38bdf8}
+.alert-list{flex:1;overflow-y:auto;padding:6px}
+.alert-list::-webkit-scrollbar{width:2px}
+.alert-list::-webkit-scrollbar-thumb{background:#1e2d40}
+.a-item{background:#111827;border-radius:6px;border-left:3px solid #374151;padding:7px 8px;margin-bottom:5px;cursor:pointer;transition:background .12s}
+.a-item:hover,.a-item.sel{background:#162032}
+.a-item.sel{border-left-color:#38bdf8}
+.a-item.cr{border-left-color:#ef4444}
+.a-item.hi{border-left-color:#f97316}
+.a-item.me{border-left-color:#eab308}
+.a-item.re{border-left-color:#22c55e;opacity:.5}
+.a-top{display:flex;justify-content:space-between;margin-bottom:2px}
+.a-name{font-size:10px;font-weight:700;color:#e2e8f0}
+.a-sev{font-size:8px;font-weight:700;padding:1px 5px;border-radius:3px}
+.a-sev.cr{background:rgba(239,68,68,.2);color:#fca5a5}
+.a-sev.hi{background:rgba(251,146,60,.18);color:#fdba74}
+.a-sev.me{background:rgba(234,179,8,.15);color:#fde047}
+.a-sev.re{background:rgba(34,197,94,.12);color:#86efac}
+.a-loc{font-size:9px;color:#475569;margin-bottom:2px}
+.a-meta{display:flex;justify-content:space-between;font-size:8px;color:#334155}
+.a-conf{color:#38bdf8;font-weight:600}
+
+/* MAP */
+.map-area{flex:1;position:relative;overflow:hidden}
+#pmap{width:100%;height:100%;display:block}
+.map-ibm{position:absolute;top:8px;left:8px;z-index:50;background:#0d1321cc;backdrop-filter:blur(4px);border:1px solid #1e2d40;border-radius:5px;padding:4px 9px;font-size:9px;font-weight:700;color:#38bdf8;display:flex;align-items:center;gap:4px}
+.map-ibm-dot{width:5px;height:5px;border-radius:50%;background:#22c55e;animation:dp 1.4s infinite}
+/* Pipe tooltip */
+.pipe-tip{position:absolute;background:#0d1321;border:1px solid #1e2d40;border-radius:6px;padding:7px 10px;font-size:10px;color:#e2e8f0;pointer-events:none;z-index:200;display:none;min-width:150px;box-shadow:0 6px 20px rgba(0,0,0,.5)}
+.pipe-tip b{display:block;font-size:11px;color:#e2e8f0;margin-bottom:3px}
+.pipe-tip .ts{color:#475569;font-size:9px}
+.pipe-tip .tv{font-weight:600}
+.pipe-tip .tr{color:#f87171}
+.pipe-tip .tg{color:#4ade80}
+.pipe-tip .to{color:#fb923c}
+.map-legend{position:absolute;bottom:12px;left:8px;z-index:500;background:#0d1321ee;border:1px solid #1e2d40;border-radius:6px;padding:7px 9px}
+.ml-title{font-size:8px;font-weight:700;text-transform:uppercase;color:#475569;margin-bottom:4px;letter-spacing:.06em}
+.ml-row{display:flex;align-items:center;gap:5px;font-size:9px;color:#64748b;margin-bottom:3px}
+.ml-line{width:18px;height:3px;border-radius:2px;flex-shrink:0}
+
+/* RIGHT DETAIL PANEL */
+.detail-panel{width:210px;background:#0a0f1a;border-left:1px solid #1e2d40;display:flex;flex-direction:column;flex-shrink:0;font-size:11px;overflow:hidden}
+.dp-head{padding:8px 10px;border-bottom:1px solid #1e2d40}
+.dp-zone{font-size:13px;font-weight:800;color:#e2e8f0;margin-bottom:1px}
+.dp-sub{font-size:9px;color:#475569}
+.dp-badges{display:flex;gap:4px;margin-top:5px;flex-wrap:wrap}
+.dpb{font-size:8px;font-weight:700;padding:1px 6px;border-radius:3px;border:1px solid}
+.dpb.cr{background:rgba(239,68,68,.2);color:#fca5a5;border-color:rgba(239,68,68,.3)}
+.dpb.hi{background:rgba(251,146,60,.18);color:#fdba74;border-color:rgba(251,146,60,.3)}
+.dpb.me{background:rgba(234,179,8,.15);color:#fde047;border-color:rgba(234,179,8,.3)}
+.dpb.type{background:rgba(99,102,241,.18);color:#a5b4fc;border-color:rgba(99,102,241,.3)}
+.dpb.ibm{background:rgba(56,189,248,.1);color:#38bdf8;border-color:rgba(56,189,248,.2)}
+.dp-body{flex:1;overflow-y:auto;padding:8px 10px}
+.dp-body::-webkit-scrollbar{width:2px}
+.dp-body::-webkit-scrollbar-thumb{background:#1e2d40}
+.dp-sec{font-size:8px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:#334155;margin:10px 0 4px}
+.dp-sec:first-child{margin-top:0}
+.kv{display:flex;justify-content:space-between;padding:3px 0;border-bottom:1px solid #0d1321;font-size:10px}
+.kv .k{color:#475569}
+.kv .v{font-weight:600;color:#e2e8f0}
+.kv .v.r{color:#f87171}
+.kv .v.o{color:#fb923c}
+.kv .v.g{color:#4ade80}
+.kv .v.b{color:#38bdf8}
+.ppe-wrap{display:flex;flex-wrap:wrap;gap:3px;margin-top:3px}
+.ppe{background:#1e2d40;color:#fbbf24;font-size:8px;font-weight:600;padding:2px 5px;border-radius:3px}
+.act-item{display:flex;gap:5px;font-size:10px;color:#cbd5e1;padding:3px 0;border-bottom:1px solid #0d1321;align-items:flex-start}
+.act-num{width:15px;height:15px;border-radius:50%;background:#1d3a5e;color:#38bdf8;font-size:8px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px}
+.assign-foot{padding:8px 10px;border-top:1px solid #1e2d40;background:#060a12}
+.assign-sel{width:100%;background:#111827;border:1px solid #1e2d40;color:#e2e8f0;padding:5px 6px;border-radius:5px;font-size:10px;margin-bottom:6px;font-family:inherit}
+.assign-go{width:100%;background:linear-gradient(135deg,#1d4ed8,#4f46e5);border:none;color:#fff;padding:6px;border-radius:5px;font-size:10px;font-weight:700;cursor:pointer;font-family:inherit}
+.assign-go:hover{background:linear-gradient(135deg,#2563eb,#6366f1)}
+
+/* WATSON CHAT */
+.chat-foot{border-top:1px solid #1e2d40;background:#050810}
+.chat-head-row{padding:5px 10px;display:flex;align-items:center;gap:5px;border-bottom:1px solid #1e2d40;cursor:pointer}
+.chat-head-label{font-size:10px;font-weight:700;color:#38bdf8}
+.chat-msgs{max-height:70px;overflow-y:auto;padding:5px 10px}
+.chat-msgs::-webkit-scrollbar{width:2px}
+.chat-msgs::-webkit-scrollbar-thumb{background:#1e2d40}
+.cmsg{font-size:9px;line-height:1.5;margin-bottom:4px}
+.cmsg.u{text-align:right}
+.cmsg.u span{background:#1e2d40;padding:2px 7px;border-radius:5px 5px 1px 5px;display:inline-block;color:#94a3b8}
+.cmsg.b span{background:#0c2140;color:#93c5fd;padding:2px 7px;border-radius:5px 5px 5px 1px;display:inline-block;border-left:2px solid #1d4ed8}
+.chat-input-row{display:flex;gap:5px;padding:5px 10px 7px}
+.chat-inp{flex:1;background:#111827;border:1px solid #1e2d40;color:#e2e8f0;padding:4px 8px;border-radius:5px;font-size:10px;font-family:inherit}
+.chat-inp::placeholder{color:#334155}
+.chat-go{background:#1d4ed8;border:none;color:#fff;padding:4px 9px;border-radius:5px;font-size:9px;font-weight:700;cursor:pointer;font-family:inherit}
+
+/* ── RIGHT: MOBILE SIDE ── */
+.mobile-side{width:280px;flex-shrink:0;background:#0a0f1a;display:flex;flex-direction:column;align-items:center;padding:10px 12px;overflow-y:auto}
+.mobile-side::-webkit-scrollbar{width:3px}
+.mobile-side::-webkit-scrollbar-thumb{background:#1e2d40}
+.mob-header{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:#38bdf8;margin-bottom:10px;text-align:center;background:rgba(56,189,248,.08);border:1px solid rgba(56,189,248,.18);border-radius:4px;padding:4px 12px}
+
+/* PHONE SHELL */
+.phone-shell{width:210px;background:#151522;border-radius:32px;padding:8px;box-shadow:0 0 0 1px #252540,0 16px 48px rgba(0,0,0,.7),inset 0 1px 0 rgba(255,255,255,.04);flex-shrink:0}
+.phone-screen{background:#fff;border-radius:25px;overflow:hidden;display:flex;flex-direction:column;min-height:420px;position:relative}
+.sb{background:#0f1117;height:22px;display:flex;align-items:center;justify-content:space-between;padding:0 14px;flex-shrink:0}
+.sb-time{font-size:9px;font-weight:700;color:#fff}
+.sb-icons{font-size:8px;color:#fff}
+.snotch{width:60px;height:13px;background:#0f1117;border-radius:0 0 12px 12px;position:absolute;top:22px;left:50%;transform:translateX(-50%);z-index:5}
+
+/* MOBILE SCREENS */
+.mob-screen{display:none;flex:1;flex-direction:column}
+.mob-screen.active{display:flex}
+
+/* screen: idle */
+.mob-idle{flex:1;background:#f8f9fb;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:16px;text-align:center;margin-top:13px}
+.mob-idle-icon{font-size:32px;margin-bottom:8px}
+.mob-idle-title{font-size:12px;font-weight:700;color:#1f2328;margin-bottom:4px}
+.mob-idle-sub{font-size:10px;color:#94a3b8}
+
+/* screen: notification */
+.mob-notif{margin-top:13px;flex:1;background:#f8f9fb;padding:10px}
+.notif-card{background:#fff;border-radius:10px;border-left:4px solid #ef4444;padding:9px 10px;box-shadow:0 2px 8px rgba(0,0,0,.08)}
+.nc-app{font-size:8px;font-weight:700;text-transform:uppercase;color:#94a3b8;margin-bottom:3px;display:flex;align-items:center;gap:4px}
+.nc-title{font-size:11px;font-weight:800;color:#dc2626;margin-bottom:3px}
+.nc-body{font-size:10px;color:#374151;line-height:1.4}
+.nc-time{font-size:8px;color:#9ca3af;margin-top:4px}
+.notif-hint{font-size:9px;color:#94a3b8;text-align:center;margin-top:10px}
+
+/* screen: task detail */
+.mob-detail-bar{background:#7f1d1d;padding:7px 10px;display:flex;justify-content:space-between;align-items:center;flex-shrink:0}
+.mob-detail-back{font-size:9px;color:#fca5a5;font-weight:600}
+.mob-detail-sev{background:#ef4444;color:#fff;font-size:8px;font-weight:700;padding:1px 6px;border-radius:3px}
+.mob-detail-body{flex:1;overflow-y:auto;background:#f8f9fb;margin-top:13px}
+.mob-detail-body::-webkit-scrollbar{width:0}
+.mob-hero{background:linear-gradient(135deg,#1a0000,#3d0000);padding:10px 12px}
+.mob-hero-type{font-size:13px;font-weight:800;color:#fca5a5;margin-bottom:1px}
+.mob-hero-seg{font-size:9px;color:#f87171}
+.mob-hero-desc{font-size:9px;color:#fca5a5;margin-top:5px;background:rgba(239,68,68,.15);padding:4px 7px;border-radius:5px;border-left:2px solid #ef4444;line-height:1.4}
+.mob-sec{padding:7px 10px;border-bottom:1px solid #e5e7eb}
+.mob-sec-title{font-size:8px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:#94a3b8;margin-bottom:5px}
+.mob-kv{display:flex;justify-content:space-between;font-size:9px;padding:2px 0;border-bottom:1px solid #f3f4f6}
+.mob-kv:last-child{border-bottom:none}
+.mob-kv .mk{color:#6b7280}
+.mob-kv .mv{font-weight:600;color:#1f2328}
+.mob-kv .mv.r{color:#dc2626}
+.mob-kv .mv.o{color:#d97706}
+.mob-kv .mv.g{color:#16a34a}
+.mob-ppe-row{display:flex;flex-wrap:wrap;gap:3px;padding:6px 10px;border-bottom:1px solid #e5e7eb}
+.mob-ppe{background:#fef3c7;color:#92400e;font-size:8px;font-weight:700;padding:2px 5px;border-radius:3px}
+.mob-act{display:flex;gap:5px;align-items:flex-start;padding:4px 10px;border-bottom:1px solid #f3f4f6;font-size:9px;color:#374151}
+.mob-act:last-child{border-bottom:none}
+.mob-act-num{width:14px;height:14px;border-radius:50%;background:#dbeafe;color:#1d4ed8;font-size:7px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px}
+
+/* screen: navigate */
+.mob-nav-bar{background:#14532d;padding:7px 10px;display:flex;justify-content:space-between;align-items:center;flex-shrink:0}
+.mob-nav-back{font-size:9px;color:#86efac;font-weight:600}
+.mob-nav-dist{font-size:9px;font-weight:700;color:#4ade80;background:rgba(34,197,94,.15);padding:2px 6px;border-radius:3px}
+.mob-map-view{height:130px;background:#1a2744;position:relative;flex-shrink:0;margin-top:13px}
+.mob-map-svg{width:100%;height:100%}
+.mob-map-info{flex:1;background:#f8f9fb;padding:8px 10px}
+.mob-gps-card{background:#fff;border-radius:6px;padding:7px 8px;margin-bottom:6px;border:1px solid #e5e7eb}
+.mob-gps-label{font-size:8px;font-weight:700;text-transform:uppercase;color:#9ca3af;margin-bottom:2px}
+.mob-gps-val{font-size:10px;font-weight:600;color:#1f2328}
+.mob-gps-addr{font-size:9px;color:#6b7280}
+.mob-nav-btn{display:block;background:linear-gradient(135deg,#16a34a,#15803d);color:#fff;border:none;border-radius:8px;padding:8px;font-size:10px;font-weight:700;margin:0 0 6px;cursor:pointer;text-align:center;width:100%;font-family:inherit}
+.mob-status-btns{display:flex;gap:5px;margin-bottom:5px}
+.msb{flex:1;border:none;border-radius:6px;padding:7px 3px;font-size:9px;font-weight:700;cursor:pointer;font-family:inherit}
+.msb.start{background:#dbeafe;color:#1d4ed8}
+.msb.flag{background:#f3f4f6;color:#6b7280;border:1px solid #e5e7eb}
+.msb.resolve{background:linear-gradient(135deg,#16a34a,#15803d);color:#fff;padding:8px;flex:2}
+
+/* screen: resolved */
+.mob-resolved{flex:1;background:#f8f9fb;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:16px;text-align:center;margin-top:13px}
+.mob-res-banner{background:linear-gradient(135deg,#dcfce7,#bbf7d0);border:1px solid #86efac;border-radius:10px;padding:14px;width:100%}
+.mob-res-icon{font-size:26px;margin-bottom:4px}
+.mob-res-title{font-size:13px;font-weight:800;color:#166534}
+.mob-res-sub{font-size:9px;color:#15803d;margin-top:2px}
+.mob-res-note{font-size:8px;color:#16a34a;margin-top:6px;background:rgba(34,197,94,.1);padding:4px 7px;border-radius:4px;line-height:1.5}
+
+/* STEP INDICATOR */
+.step-indicator{display:flex;gap:4px;justify-content:center;margin:8px 0 4px}
+.step-dot{width:6px;height:6px;border-radius:50%;background:#1e2d40;transition:background .3s}
+.step-dot.active{background:#38bdf8}
+.step-dot.done{background:#22c55e}
+.mob-screen-label{font-size:9px;color:#475569;text-align:center;margin-bottom:6px}
+
+/* TOAST */
+.toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%) translateY(80px);background:#0d1321;border:1px solid #1e2d40;border-radius:8px;padding:10px 18px;font-size:11px;font-weight:600;color:#e2e8f0;z-index:9999;transition:transform .4s cubic-bezier(.34,1.56,.64,1);white-space:nowrap;display:flex;align-items:center;gap:8px;box-shadow:0 8px 24px rgba(0,0,0,.5)}
+.toast.show{transform:translateX(-50%) translateY(0)}
+.toast.crit{border-color:rgba(239,68,68,.5);color:#fca5a5}
+.toast.ok{border-color:rgba(34,197,94,.4);color:#86efac}
+.toast.info{border-color:rgba(56,189,248,.3);color:#38bdf8}
+
+/* POPUP */
+.pipe-popup .leaflet-popup-content-wrapper{background:#0d1321!important;border:1px solid #1e2d40!important;border-radius:8px!important;box-shadow:0 8px 20px rgba(0,0,0,.5)!important}
+.pipe-popup .leaflet-popup-tip{background:#1e2d40!important}
+.pipe-popup .leaflet-popup-content{margin:0!important;color:#e2e8f0!important}
+.pipe-popup .leaflet-popup-close-button{color:#475569!important;top:5px!important;right:7px!important}
+.pu-inner{padding:9px 12px;min-width:160px}
+.pu-title{font-size:11px;font-weight:700;color:#e2e8f0;margin-bottom:1px}
+.pu-sub{font-size:9px;color:#475569;margin-bottom:5px}
+.pu-row{display:flex;justify-content:space-between;font-size:10px;padding:2px 0}
+.pu-row .pk{color:#475569}
+.pu-row .pv{font-weight:600;color:#e2e8f0}
+.pu-row .pv.r{color:#f87171}
+.pu-row .pv.g{color:#4ade80}
+
+/* STEP PROGRESS (demo bar) */
+.step-prog{display:flex;align-items:center;gap:6px;margin-left:8px}
+.sp-step{display:flex;align-items:center;gap:3px;font-size:9px;font-weight:600;color:#334155;transition:color .3s}
+.sp-step.done{color:#4ade80}
+.sp-step.active{color:#38bdf8}
+.sp-divider{font-size:9px;color:#1e2d40}
+</style>
+</head>
+<body>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<!-- TOP DEMO BAR -->
+<div class="demo-bar">
+  <div class="demo-logo"><div class="demo-logo-box">⬡</div>Flowgen AI</div>
+  <div class="demo-sep"></div>
+  <div class="demo-label">Live Demo — Pune PCMC</div>
+  <div class="step-prog">
+    <div class="sp-step" id="sp1">① Sensor</div><div class="sp-divider">›</div>
+    <div class="sp-step" id="sp2">② AI Detects</div><div class="sp-divider">›</div>
+    <div class="sp-step" id="sp3">③ Map Alert</div><div class="sp-divider">›</div>
+    <div class="sp-step" id="sp4">④ Assign Crew</div><div class="sp-divider">›</div>
+    <div class="sp-step" id="sp5">⑤ Mobile Push</div><div class="sp-divider">›</div>
+    <div class="sp-step" id="sp6">⑥ Resolved</div>
+  </div>
+  <div class="demo-spacer"></div>
+  <span id="simTimer" class="sim-timer"></span>
+  <div class="sim-section">
+    <span class="sim-label">Simulate:</span>
+    <button class="sim-btn burst" id="btnBurst" onclick="simBurst()">💥 Pipe Burst</button>
+    <button class="sim-btn contam" id="btnContam" onclick="simContam()">☣️ Contamination</button>
+    <button class="sim-btn resolve" id="btnResolve" onclick="simResolve()" disabled>✓ Resolve</button>
+    <button class="sim-btn reset" onclick="simReset()">↺ Reset</button>
+  </div>
+</div>
+
+<!-- SPLIT LAYOUT -->
+<div class="split">
+
+<!-- ══ DASHBOARD ══ -->
+<div class="dash-side">
+  <div class="dash-nav">
+    <div class="dash-nav-title">🖥️ Municipal Dashboard — Manager View</div>
+    <div class="stat-chip cr"><div class="dot red"></div><span id="critCount">1</span> Critical</div>
+    <div class="stat-chip hi"><div class="dot or"></div><span id="highCount">2</span> High</div>
+    <div class="stat-chip ok"><div class="dot gr"></div>87% Healthy</div>
+    <div class="sp"></div>
+    <div class="ibm-live"><div class="dot gr" style="width:5px;height:5px;animation:dp 1.4s infinite"></div>watsonx.ai Live</div>
+  </div>
+  <div class="dash-main">
+    <!-- ALERT LIST -->
+    <div class="alert-panel">
+      <div class="ap-head"><span class="ap-title">Live Alerts</span><span class="ap-count" id="alertCount">3 Open</span></div>
+      <div class="alert-list" id="alertList">
+        <div class="a-item cr sel" id="ai-1" onclick="selectAlert(1,this)">
+          <div class="a-top"><span class="a-name">🔴 Pipe Burst</span><span class="a-sev cr">CRITICAL</span></div>
+          <div class="a-loc">Segment 7 · Kasba Peth</div>
+          <div class="a-meta"><span>2 min ago</span><span class="a-conf">92%</span></div>
+        </div>
+        <div class="a-item hi" id="ai-2" onclick="selectAlert(2,this)">
+          <div class="a-top"><span class="a-name">🟠 Pipe Burst</span><span class="a-sev hi">HIGH</span></div>
+          <div class="a-loc">Segment 5 · Pimpri</div>
+          <div class="a-meta"><span>14 min ago</span><span class="a-conf">81%</span></div>
+        </div>
+        <div class="a-item me" id="ai-3" onclick="selectAlert(3,this)">
+          <div class="a-top"><span class="a-name">🟡 Chemical</span><span class="a-sev me">MEDIUM</span></div>
+          <div class="a-loc">Segment 19 · Pimpri</div>
+          <div class="a-meta"><span>23 min ago</span><span class="a-conf">74%</span></div>
+        </div>
+        <div class="a-item re" id="ai-4" onclick="selectAlert(4,this)">
+          <div class="a-top"><span class="a-name">✓ Burst</span><span class="a-sev re">RESOLVED</span></div>
+          <div class="a-loc">Segment 3 · Chinchwad</div>
+          <div class="a-meta"><span>1 hr ago</span><span style="color:#4ade80;font-weight:600">Fixed</span></div>
+        </div>
+      </div>
+    </div>
+    <!-- MAP — fully offline SVG Pune PCMC network -->
+    <div class="map-area" id="mapArea">
+      <svg id="pmap" viewBox="0 0 900 560" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg">
+        <!-- ── BASE: dark city background ── -->
+        <rect width="900" height="560" fill="#111827"/>
+        <!-- City grid blocks / neighbourhoods -->
+        <rect x="0" y="0" width="900" height="560" fill="#131f30" opacity=".5"/>
+
+        <!-- ── MUTHA RIVER ── -->
+        <path d="M0,310 Q80,295 160,308 Q240,320 320,305 Q400,290 480,302 Q560,314 640,298 Q720,282 800,295 Q860,303 900,298 L900,330 Q860,325 800,318 Q720,305 640,322 Q560,338 480,325 Q400,313 320,328 Q240,343 160,330 Q80,318 0,333Z" fill="#0f2d4a" opacity=".8"/>
+        <text x="120" y="326" font-size="9" fill="#1e3d5e" font-family="sans-serif" font-weight="600">Mutha River</text>
+
+        <!-- ── MAJOR ROADS ── -->
+        <!-- NH-48 / Pune-Mumbai Expressway diagonal -->
+        <line x1="0" y1="80" x2="280" y2="200" stroke="#1c2d42" stroke-width="6"/>
+        <line x1="280" y1="200" x2="500" y2="240" stroke="#1c2d42" stroke-width="6"/>
+        <!-- Pune-Nashik Road going north -->
+        <line x1="420" y1="0" x2="380" y2="280" stroke="#1c2d42" stroke-width="5"/>
+        <!-- Solapur Road going east -->
+        <line x1="520" y1="340" x2="900" y2="390" stroke="#1c2d42" stroke-width="5"/>
+        <!-- MG Road / main city artery -->
+        <line x1="300" y1="340" x2="700" y2="340" stroke="#1a2d44" stroke-width="7"/>
+        <!-- FC Road -->
+        <line x1="380" y1="260" x2="520" y2="310" stroke="#1a2d44" stroke-width="5"/>
+        <!-- JM Road -->
+        <line x1="300" y1="290" x2="500" y2="290" stroke="#1a2d44" stroke-width="5"/>
+        <!-- Karve Road -->
+        <line x1="320" y1="340" x2="280" y2="490" stroke="#1a2d44" stroke-width="5"/>
+        <!-- Nagar Road -->
+        <line x1="560" y1="300" x2="900" y2="260" stroke="#1c2d42" stroke-width="5"/>
+        <!-- Satara Road -->
+        <line x1="440" y1="380" x2="400" y2="560" stroke="#1c2d42" stroke-width="4"/>
+        <!-- Pimpri-Chinchwad corridor -->
+        <line x1="0" y1="130" x2="350" y2="130" stroke="#1c2d42" stroke-width="5"/>
+        <line x1="0" y1="175" x2="350" y2="175" stroke="#1a2d44" stroke-width="4"/>
+        <!-- Cross streets Pimpri area -->
+        <line x1="80" y1="60" x2="80" y2="220" stroke="#1a2d44" stroke-width="3"/>
+        <line x1="160" y1="60" x2="160" y2="220" stroke="#1a2d44" stroke-width="3"/>
+        <line x1="240" y1="60" x2="240" y2="220" stroke="#1a2d44" stroke-width="3"/>
+        <!-- Cross streets central Pune -->
+        <line x1="380" y1="260" x2="380" y2="420" stroke="#1a2d44" stroke-width="3"/>
+        <line x1="460" y1="260" x2="460" y2="400" stroke="#1a2d44" stroke-width="3"/>
+        <line x1="540" y1="260" x2="540" y2="370" stroke="#1a2d44" stroke-width="3"/>
+        <!-- Kothrud side roads -->
+        <line x1="240" y1="380" x2="320" y2="490" stroke="#1a2d44" stroke-width="3"/>
+        <line x1="200" y1="400" x2="280" y2="500" stroke="#1a2d44" stroke-width="3"/>
+
+        <!-- ── ROAD LABELS ── -->
+        <text x="30" y="93" font-size="8" fill="#243d55" font-family="sans-serif" transform="rotate(-18,30,93)">NH-48</text>
+        <text x="310" y="326" font-size="8" fill="#243d55" font-family="sans-serif">MG Road</text>
+        <text x="310" y="275" font-size="8" fill="#243d55" font-family="sans-serif">JM Road</text>
+        <text x="370" y="250" font-size="8" fill="#243d55" font-family="sans-serif">FC Road</text>
+        <text x="630" y="248" font-size="8" fill="#243d55" font-family="sans-serif">Nagar Road</text>
+
+        <!-- ── DISTRICT BLOCKS (subtle shading) ── -->
+        <rect x="15" y="65" width="270" height="165" fill="#0d1f30" rx="4" opacity=".4"/>
+        <rect x="315" y="255" width="200" height="120" fill="#0d1f30" rx="4" opacity=".35"/>
+        <rect x="190" y="370" width="130" height="130" fill="#0d1f30" rx="4" opacity=".35"/>
+        <rect x="500" y="255" width="160" height="100" fill="#0d1f30" rx="4" opacity=".3"/>
+        <rect x="600" y="75" width="200" height="120" fill="#0d1f30" rx="4" opacity=".3"/>
+        <rect x="700" y="340" width="180" height="120" fill="#0d1f30" rx="4" opacity=".3"/>
+
+        <!-- ── DISTRICT LABELS ── -->
+        <text x="110" y="88" font-size="11" fill="#2d4a62" font-family="sans-serif" font-weight="700">PIMPRI</text>
+        <text x="55" y="160" font-size="11" fill="#2d4a62" font-family="sans-serif" font-weight="700">CHINCHWAD</text>
+        <text x="30" y="60" font-size="10" fill="#2d4a62" font-family="sans-serif" font-weight="700">AKURDI</text>
+        <text x="620" y="100" font-size="10" fill="#2d4a62" font-family="sans-serif" font-weight="700">NIGDI</text>
+        <text x="340" y="275" font-size="10" fill="#2d4a62" font-family="sans-serif" font-weight="700">KASBA PETH</text>
+        <text x="505" y="270" font-size="10" fill="#2d4a62" font-family="sans-serif" font-weight="700">SHIVAJINAGAR</text>
+        <text x="215" y="388" font-size="10" fill="#2d4a62" font-family="sans-serif" font-weight="700">KOTHRUD</text>
+        <text x="730" y="358" font-size="10" fill="#2d4a62" font-family="sans-serif" font-weight="700">HADAPSAR</text>
+
+        <!-- ── PIPELINE NETWORK (SVG polylines, JS will update colours) ── -->
+        <!-- Each pipe has data-id, data-zone, data-age, data-mat, data-risk -->
+        <!-- Trunk mains (backbone) -->
+        <polyline id="pipe-25" data-id="25" data-zone="Trunk" data-age="40" data-mat="Ductile Iron" data-risk="35"
+          points="440,305 360,240 220,175 100,130" stroke="#22c55e" stroke-width="3" stroke-linecap="round" fill="none" opacity=".7" class="pipe-line"/>
+        <polyline id="pipe-26" data-id="26" data-zone="Trunk" data-age="38" data-mat="Ductile Iron" data-risk="33"
+          points="440,320 320,255 180,195 60,160" stroke="#22c55e" stroke-width="3" stroke-linecap="round" fill="none" opacity=".7" class="pipe-line"/>
+        <polyline id="pipe-27" data-id="27" data-zone="Trunk" data-age="42" data-mat="Cast Iron" data-risk="48"
+          points="450,335 340,260 200,195 80,145" stroke="#22c55e" stroke-width="2.5" stroke-linecap="round" fill="none" opacity=".6" class="pipe-line"/>
+
+        <!-- Kasba Peth pipes -->
+        <polyline id="pipe-7" data-id="7" data-zone="Kasba Peth" data-age="71" data-mat="Cast Iron" data-risk="87"
+          points="360,345 400,318 440,305" stroke="#ef4444" stroke-width="5" stroke-linecap="round" fill="none" class="pipe-line"/>
+        <polyline id="pipe-glow-7"
+          points="360,345 400,318 440,305" stroke="#ef4444" stroke-width="14" stroke-linecap="round" fill="none" opacity=".18" class="pipe-glow" style="pointer-events:none"/>
+        <polyline id="pipe-8" data-id="8" data-zone="Kasba Peth" data-age="45" data-mat="PVC" data-risk="30"
+          points="440,305 480,290 510,278" stroke="#22c55e" stroke-width="3" stroke-linecap="round" fill="none" class="pipe-line"/>
+        <polyline id="pipe-9" data-id="9" data-zone="Kasba Peth" data-age="38" data-mat="Ductile Iron" data-risk="25"
+          points="360,345 340,370 320,390" stroke="#22c55e" stroke-width="3" stroke-linecap="round" fill="none" class="pipe-line"/>
+
+        <!-- Pimpri pipes -->
+        <polyline id="pipe-5" data-id="5" data-zone="Pimpri" data-age="55" data-mat="Cast Iron" data-risk="73"
+          points="90,100 130,120 160,138" stroke="#f97316" stroke-width="4" stroke-linecap="round" fill="none" class="pipe-line"/>
+        <polyline id="pipe-5-glow"
+          points="90,100 130,120 160,138" stroke="#f97316" stroke-width="11" stroke-linecap="round" fill="none" opacity=".15" class="pipe-glow" style="pointer-events:none"/>
+        <polyline id="pipe-6" data-id="6" data-zone="Pimpri" data-age="22" data-mat="HDPE" data-risk="18"
+          points="60,80 100,98 140,112" stroke="#22c55e" stroke-width="2.5" stroke-linecap="round" fill="none" class="pipe-line"/>
+        <polyline id="pipe-19" data-id="19" data-zone="Pimpri" data-age="48" data-mat="Cast Iron" data-risk="62"
+          points="100,145 140,162 175,178" stroke="#eab308" stroke-width="3.5" stroke-linecap="round" fill="none" class="pipe-line"/>
+        <polyline id="pipe-20" data-id="20" data-zone="Pimpri" data-age="15" data-mat="HDPE" data-risk="12"
+          points="175,110 215,125 255,138" stroke="#22c55e" stroke-width="2.5" stroke-linecap="round" fill="none" class="pipe-line"/>
+
+        <!-- Chinchwad pipes -->
+        <polyline id="pipe-3" data-id="3" data-zone="Chinchwad" data-age="60" data-mat="Cast Iron" data-risk="40"
+          points="55,190 100,200 140,210" stroke="#64748b" stroke-width="2.5" stroke-linecap="round" fill="none" stroke-dasharray="7,4" class="pipe-line"/>
+        <polyline id="pipe-4" data-id="4" data-zone="Chinchwad" data-age="28" data-mat="Ductile Iron" data-risk="22"
+          points="80,210 120,225 155,240" stroke="#22c55e" stroke-width="2.5" stroke-linecap="round" fill="none" class="pipe-line"/>
+
+        <!-- Akurdi pipes -->
+        <polyline id="pipe-12" data-id="12" data-zone="Akurdi" data-age="52" data-mat="Cast Iron" data-risk="55"
+          points="55,35 95,55 130,72" stroke="#22c55e" stroke-width="3" stroke-linecap="round" fill="none" class="pipe-line"/>
+        <polyline id="pipe-13" data-id="13" data-zone="Akurdi" data-age="18" data-mat="PVC" data-risk="15"
+          points="60,50 100,65 140,80" stroke="#22c55e" stroke-width="2.5" stroke-linecap="round" fill="none" class="pipe-line"/>
+
+        <!-- Nigdi pipes -->
+        <polyline id="pipe-23" data-id="23" data-zone="Nigdi" data-age="50" data-mat="Cast Iron" data-risk="65"
+          points="630,90 680,108 720,122" stroke="#eab308" stroke-width="3" stroke-linecap="round" fill="none" class="pipe-line"/>
+        <polyline id="pipe-24" data-id="24" data-zone="Nigdi" data-age="12" data-mat="HDPE" data-risk="10"
+          points="660,75 705,90 745,105" stroke="#22c55e" stroke-width="2.5" stroke-linecap="round" fill="none" class="pipe-line"/>
+
+        <!-- Shivajinagar pipes -->
+        <polyline id="pipe-1" data-id="1" data-zone="Shivajinagar" data-age="35" data-mat="Ductile Iron" data-risk="32"
+          points="500,290 535,305 560,318" stroke="#22c55e" stroke-width="3" stroke-linecap="round" fill="none" class="pipe-line"/>
+        <polyline id="pipe-2" data-id="2" data-zone="Shivajinagar" data-age="20" data-mat="PVC" data-risk="18"
+          points="460,300 500,315 530,328" stroke="#22c55e" stroke-width="2.5" stroke-linecap="round" fill="none" class="pipe-line"/>
+
+        <!-- Kothrud pipes -->
+        <polyline id="pipe-15" data-id="15" data-zone="Kothrud" data-age="25" data-mat="Ductile Iron" data-risk="22"
+          points="240,400 270,425 295,448" stroke="#22c55e" stroke-width="2.5" stroke-linecap="round" fill="none" class="pipe-line"/>
+        <polyline id="pipe-16" data-id="16" data-zone="Kothrud" data-age="32" data-mat="Cast Iron" data-risk="38"
+          points="220,415 255,440 280,460" stroke="#22c55e" stroke-width="2.5" stroke-linecap="round" fill="none" class="pipe-line"/>
+
+        <!-- Hadapsar pipes -->
+        <polyline id="pipe-17" data-id="17" data-zone="Hadapsar" data-age="18" data-mat="HDPE" data-risk="15"
+          points="740,360 780,375 820,388" stroke="#22c55e" stroke-width="2.5" stroke-linecap="round" fill="none" class="pipe-line"/>
+        <polyline id="pipe-18" data-id="18" data-zone="Hadapsar" data-age="10" data-mat="PVC" data-risk="8"
+          points="760,380 800,393 840,405" stroke="#22c55e" stroke-width="2" stroke-linecap="round" fill="none" class="pipe-line"/>
+
+        <!-- ── ALERT PINS (shown when alert active) ── -->
+        <!-- Pin for seg 7 Kasba Peth — critical burst -->
+        <g id="pin-7" transform="translate(400,318)">
+          <circle r="14" fill="#ef4444" opacity=".18"><animate attributeName="r" values="14;24;14" dur="1.5s" repeatCount="indefinite"/><animate attributeName="opacity" values=".18;0;.18" dur="1.5s" repeatCount="indefinite"/></circle>
+          <circle r="10" fill="#ef4444" stroke="#fff" stroke-width="2"/>
+          <text x="-4" y="4" font-size="11" fill="#fff" font-weight="900" font-family="sans-serif">!</text>
+        </g>
+        <!-- Pin for seg 5 Pimpri — high burst -->
+        <g id="pin-5" transform="translate(130,120)">
+          <circle r="9" fill="#f97316" stroke="#fff" stroke-width="2"/>
+          <text x="-4" y="4" font-size="10" fill="#fff" font-weight="900" font-family="sans-serif">!</text>
+        </g>
+        <!-- Pin for seg 19 Pimpri — medium chemical -->
+        <g id="pin-19" transform="translate(140,162)">
+          <circle r="8" fill="#eab308" stroke="#fff" stroke-width="2"/>
+          <text x="-4" y="4" font-size="10" fill="#fff" font-weight="900" font-family="sans-serif">!</text>
+        </g>
+        <!-- Pin for seg 12 Akurdi — hidden initially -->
+        <g id="pin-12" transform="translate(95,55)" style="display:none">
+          <circle r="12" fill="#f97316" opacity=".18"><animate attributeName="r" values="12;20;12" dur="1.5s" repeatCount="indefinite"/><animate attributeName="opacity" values=".18;0;.18" dur="1.5s" repeatCount="indefinite"/></circle>
+          <circle r="9" fill="#f97316" stroke="#fff" stroke-width="2"/>
+          <text x="-4" y="4" font-size="10" fill="#fff" font-weight="900" font-family="sans-serif">!</text>
+        </g>
+
+        <!-- ── WATER TREATMENT PLANT icon ── -->
+        <g transform="translate(820,50)">
+          <rect x="-18" y="-14" width="36" height="28" fill="#0d2030" stroke="#1e3d55" stroke-width="1.2" rx="3"/>
+          <text x="-10" y="4" font-size="12" fill="#38bdf8" font-family="sans-serif">🏭</text>
+          <text x="-18" y="22" font-size="7" fill="#38bdf8" font-family="sans-serif">Treatment</text>
+          <text x="-12" y="31" font-size="7" fill="#38bdf8" font-family="sans-serif">Plant</text>
+        </g>
+        <!-- Trunk main from plant -->
+        <line x1="802" y1="50" x2="720" y2="122" stroke="#22c55e" stroke-width="2" stroke-dasharray="5,3" opacity=".5"/>
+        <line x1="802" y1="50" x2="440" y2="305" stroke="#22c55e" stroke-width="2" stroke-dasharray="5,3" opacity=".4"/>
+
+        <!-- ── SCALE BAR & ATTRIBUTION ── -->
+        <line x1="20" y1="540" x2="120" y2="540" stroke="#243d55" stroke-width="1.5"/>
+        <line x1="20" y1="536" x2="20" y2="544" stroke="#243d55" stroke-width="1.5"/>
+        <line x1="120" y1="536" x2="120" y2="544" stroke="#243d55" stroke-width="1.5"/>
+        <text x="44" y="535" font-size="7.5" fill="#243d55" font-family="sans-serif">~5 km</text>
+        <text x="680" y="552" font-size="7" fill="#1e3d55" font-family="sans-serif">Pune PCMC Water Distribution Network · Flowgen AI · IBM watsonx.ai</text>
+      </svg>
+
+      <!-- Pipe tooltip -->
+      <div class="pipe-tip" id="pipeTip">
+        <b id="ptName"></b>
+        <div class="ts">Zone: <span class="tv" id="ptZone"></span></div>
+        <div class="ts">Status: <span class="tv" id="ptStatus"></span></div>
+        <div class="ts">Material: <span class="tv" id="ptMat"></span></div>
+        <div class="ts">Age: <span class="tv" id="ptAge"></span></div>
+        <div class="ts">Risk Score: <span class="tv" id="ptRisk"></span></div>
+      </div>
+
+      <div class="map-ibm"><div class="map-ibm-dot"></div>IBM watsonx.ai · Live — Pune PCMC</div>
+      <div class="map-legend">
+        <div class="ml-title">Pipe Status</div>
+        <div class="ml-row"><div class="ml-line" style="background:#22c55e"></div>Healthy</div>
+        <div class="ml-row"><div class="ml-line" style="background:#eab308"></div>Medium Risk</div>
+        <div class="ml-row"><div class="ml-line" style="background:#f97316"></div>High Alert</div>
+        <div class="ml-row"><div class="ml-line" style="background:#ef4444"></div>Critical</div>
+        <div class="ml-row"><div class="ml-line" style="background:#64748b;opacity:.6"></div>Resolved</div>
+      </div>
+    </div>
+    <!-- DETAIL PANEL -->
+    <div class="detail-panel">
+      <div class="dp-head">
+        <div class="dp-zone" id="dpZone">Kasba Peth — Seg. 7</div>
+        <div class="dp-sub" id="dpSub">Water Main · Cast Iron</div>
+        <div class="dp-badges" id="dpBadges">
+          <span class="dpb cr">● CRITICAL</span><span class="dpb type">Pipe Burst</span><span class="dpb ibm">Granite TS</span>
+        </div>
+      </div>
+      <div class="dp-body" id="dpBody">
+        <div class="dp-sec">AI Detection</div>
+        <div class="kv"><span class="k">Confidence</span><span class="v g">92%</span></div>
+        <div class="kv"><span class="k">Est. Loss</span><span class="v r">1,200 L/hr</span></div>
+        <div class="kv"><span class="k">IBM Model</span><span class="v b">Granite TS</span></div>
+        <div class="dp-sec">Sensor Readings</div>
+        <div class="kv"><span class="k">Pressure</span><span class="v r">28 PSI ↓</span></div>
+        <div class="kv"><span class="k">Flow Rate</span><span class="v o">+340 L/min spike</span></div>
+        <div class="kv"><span class="k">pH</span><span class="v g">7.2 Normal ✓</span></div>
+        <div class="kv"><span class="k">Contamination</span><span class="v g">CLEAN</span></div>
+        <div class="dp-sec">Pipe Info</div>
+        <div class="kv"><span class="k">Material</span><span class="v o">Cast Iron</span></div>
+        <div class="kv"><span class="k">Age</span><span class="v o">71 years</span></div>
+        <div class="kv"><span class="k">Risk Score</span><span class="v r">87/100</span></div>
+        <div class="dp-sec">PPE Required</div>
+        <div class="ppe-wrap"><span class="ppe">Hard Hat</span><span class="ppe">Water Gloves</span><span class="ppe">Safety Boots</span></div>
+        <div class="dp-sec">Actions</div>
+        <div class="act-item"><div class="act-num">1</div>Close Zone 4 isolation valve</div>
+        <div class="act-item"><div class="act-num">2</div>Excavate at GPS coordinates</div>
+        <div class="act-item"><div class="act-num">3</div>Replace 150mm cast iron section</div>
+        <div class="act-item"><div class="act-num">4</div>Pressure test at 80 PSI</div>
+      </div>
+      <div class="assign-foot">
+        <div style="font-size:8px;font-weight:700;text-transform:uppercase;color:#475569;margin-bottom:5px;letter-spacing:.06em">Assign Crew</div>
+        <select class="assign-sel" id="crewSel">
+          <option value="">— Select crew member —</option>
+          <option value="Raj Kumar">Raj Kumar · Zone 4 (Available)</option>
+          <option value="Meera Singh">Meera Singh · Zone 7 (Available)</option>
+          <option value="Arjun Patil">Arjun Patil · Zone 2 (On-Site)</option>
+        </select>
+        <button class="assign-go" id="assignBtn" onclick="assignCrew()">⚡ Dispatch Crew</button>
+      </div>
+      <div class="chat-foot">
+        <div class="chat-head-row">
+          <span style="font-size:12px">⬡</span>
+          <span class="chat-head-label">Ask watsonx Assistant</span>
+          <span style="font-size:8px;color:#334155;margin-left:auto">IBM RAG</span>
+        </div>
+        <div class="chat-msgs" id="chatMsgs">
+          <div class="cmsg b"><span>Zone 4 has CRITICAL burst — Seg. 7, est. 1,200 L/hr. 71yr cast iron. Dispatch immediately.</span></div>
+        </div>
+        <div class="chat-input-row">
+          <input class="chat-inp" id="chatInp" placeholder="Ask about any zone…" onkeydown="if(event.key==='Enter')sendChat()">
+          <button class="chat-go" onclick="sendChat()">Ask</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ MOBILE ══ -->
+<div class="mobile-side">
+  <div class="mob-header">📱 Repair Crew — Mobile App</div>
+  <div class="phone-shell">
+    <div class="phone-screen">
+      <div class="sb"><span class="sb-time" id="mobTime">9:41</span><span class="sb-icons">5G ■■</span></div>
+      <div class="snotch"></div>
+      <!-- IDLE -->
+      <div class="mob-screen active" id="ms-idle">
+        <div class="mob-idle">
+          <div class="mob-idle-icon">📱</div>
+          <div class="mob-idle-title">Raj Kumar</div>
+          <div class="mob-idle-sub">Waiting for assignments…<br><br>Trigger a simulation above to see the mobile app respond in real time.</div>
+        </div>
+      </div>
+      <!-- NOTIFICATION -->
+      <div class="mob-screen" id="ms-notif">
+        <div class="mob-notif">
+          <div class="notif-card" id="notifCard">
+            <div class="nc-app">⬡ Flowgen AI — watsonx Assistant</div>
+            <div class="nc-title" id="notifTitle">🔴 CRITICAL: Pipe Burst</div>
+            <div class="nc-body" id="notifBody">Segment 7 · Kasba Peth<br>Est. 1,200 L/hr loss · Close Zone 4 valve first<br>PPE: Hard Hat + Water Gloves</div>
+            <div class="nc-time">Just now · Assigned by Mgr. Priya</div>
+          </div>
+          <div class="notif-hint">Tap "View Task" to see full details →</div>
+          <button onclick="mobGo('ms-detail')" style="display:block;margin:8px auto 0;background:#ef4444;color:#fff;border:none;border-radius:7px;padding:8px 20px;font-size:10px;font-weight:700;cursor:pointer;font-family:inherit">View Task →</button>
+        </div>
+      </div>
+      <!-- TASK DETAIL -->
+      <div class="mob-screen" id="ms-detail">
+        <div class="mob-detail-bar">
+          <span class="mob-detail-back" onclick="mobGo('ms-notif')">← Back</span>
+          <span class="mob-detail-sev" id="mobSevBadge">CRITICAL</span>
+        </div>
+        <div class="mob-detail-body" id="mobDetailBody">
+          <div class="mob-hero">
+            <div class="mob-hero-type" id="mobHeroType">🔧 Pipe Burst</div>
+            <div class="mob-hero-seg" id="mobHeroSeg">Segment 7 · Kasba Peth · Cast Iron · 71 yrs</div>
+            <div class="mob-hero-desc" id="mobHeroDesc">IBM Granite: Pressure dropped 37 PSI in 90 sec. Est. 1,200 L/hr loss. No contamination. Conf: 92%.</div>
+          </div>
+          <div class="mob-sec">
+            <div class="mob-sec-title">Sensor Readings</div>
+            <div class="mob-kv"><span class="mk">Pressure</span><span class="mv r" id="mobPres">28 PSI ↓</span></div>
+            <div class="mob-kv"><span class="mk">Flow</span><span class="mv o" id="mobFlow">+340 L/min spike</span></div>
+            <div class="mob-kv"><span class="mk">pH</span><span class="mv g" id="mobPH">7.2 Normal ✓</span></div>
+            <div class="mob-kv"><span class="mk">Contamination</span><span class="mv g" id="mobContam">CLEAN</span></div>
+          </div>
+          <div class="mob-ppe-row" id="mobPPERow">
+            <span class="mob-ppe">🪖 Hard Hat</span><span class="mob-ppe">🧤 Water Gloves</span><span class="mob-ppe">👢 Safety Boots</span>
+          </div>
+          <div class="mob-sec" style="border-bottom:none"><div class="mob-sec-title">Actions</div></div>
+          <div id="mobActions">
+            <div class="mob-act"><div class="mob-act-num">1</div>Close Zone 4 isolation valve</div>
+            <div class="mob-act"><div class="mob-act-num">2</div>Excavate at GPS coordinates</div>
+            <div class="mob-act"><div class="mob-act-num">3</div>Replace 150mm cast iron section</div>
+            <div class="mob-act"><div class="mob-act-num">4</div>Pressure test at 80 PSI</div>
+          </div>
+          <div style="padding:6px 10px">
+            <button onclick="mobGo('ms-nav')" style="width:100%;background:linear-gradient(135deg,#1d4ed8,#4f46e5);color:#fff;border:none;border-radius:7px;padding:8px;font-size:10px;font-weight:700;cursor:pointer;font-family:inherit">📍 Navigate to Site →</button>
+          </div>
+        </div>
+      </div>
+      <!-- NAVIGATE -->
+      <div class="mob-screen" id="ms-nav">
+        <div class="mob-nav-bar">
+          <span class="mob-nav-back" onclick="mobGo('ms-detail')">← Detail</span>
+          <span class="mob-nav-dist" id="mobDist">700m away</span>
+        </div>
+        <div class="mob-map-view" style="margin-top:13px">
+          <svg class="mob-map-svg" viewBox="0 0 210 130" xmlns="http://www.w3.org/2000/svg">
+            <rect width="210" height="130" fill="#1a2744"/>
+            <path d="M0,72 Q35,68 70,74 Q105,80 140,71 Q175,63 210,69 L210,82 Q175,76 140,84 Q105,90 70,86 Q35,80 0,84Z" fill="#1e3a5f" opacity=".7"/>
+            <line x1="28" y1="0" x2="28" y2="130" stroke="#243555" stroke-width="4"/>
+            <line x1="70" y1="0" x2="70" y2="130" stroke="#243555" stroke-width="3"/>
+            <line x1="130" y1="0" x2="130" y2="130" stroke="#243555" stroke-width="3"/>
+            <line x1="175" y1="0" x2="175" y2="130" stroke="#243555" stroke-width="2.5"/>
+            <line x1="0" y1="35" x2="210" y2="35" stroke="#243555" stroke-width="4"/>
+            <line x1="0" y1="65" x2="210" y2="65" stroke="#243555" stroke-width="3"/>
+            <line x1="0" y1="100" x2="210" y2="100" stroke="#243555" stroke-width="2.5"/>
+            <rect x="8" y="6" width="14" height="10" fill="#1e3250" rx="1"/><rect x="32" y="6" width="18" height="12" fill="#1e3250" rx="1"/>
+            <rect x="80" y="6" width="16" height="9" fill="#1e3250" rx="1"/><rect x="140" y="6" width="20" height="11" fill="#1e3250" rx="1"/>
+            <rect x="8" y="42" width="12" height="9" fill="#1e3250" rx="1"/><rect x="80" y="42" width="18" height="9" fill="#1e3250" rx="1"/>
+            <line x1="28" y1="65" x2="130" y2="65" stroke="#22c55e" stroke-width="2.5" stroke-linecap="round"/>
+            <line x1="130" y1="35" x2="175" y2="65" stroke="#ef4444" stroke-width="3.5" stroke-linecap="round"><animate attributeName="opacity" values="1;.3;1" dur="1.2s" repeatCount="indefinite"/></line>
+            <line x1="130" y1="35" x2="175" y2="65" stroke="#ef4444" stroke-width="10" stroke-linecap="round" opacity=".12"><animate attributeName="opacity" values=".15;.03;.15" dur="1.2s" repeatCount="indefinite"/></line>
+            <line x1="28" y1="35" x2="130" y2="35" stroke="#22c55e" stroke-width="2" stroke-linecap="round" opacity=".6"/>
+            <line x1="70" y1="35" x2="70" y2="65" stroke="#eab308" stroke-width="2" stroke-linecap="round"/>
+            <line x1="48" y1="112" x2="158" y2="48" stroke="#38bdf8" stroke-width="1.2" stroke-dasharray="4,3" opacity=".7"/>
+            <circle cx="48" cy="112" r="5" fill="#1d4ed8" opacity=".25"/><circle cx="48" cy="112" r="4" fill="#1d4ed8"/><circle cx="48" cy="112" r="2.5" fill="#fff"/>
+            <circle cx="158" cy="48" r="6" fill="#ef4444" opacity=".2"><animate attributeName="r" values="6;12;6" dur="1.5s" repeatCount="indefinite"/><animate attributeName="opacity" values=".2;0;.2" dur="1.5s" repeatCount="indefinite"/></circle>
+            <circle cx="158" cy="48" r="6" fill="#ef4444"/>
+            <text x="155" y="52" font-size="7" fill="#fff" font-weight="bold" font-family="sans-serif">!</text>
+            <text x="3" y="127" font-size="5" fill="#243555" font-family="sans-serif">Mapbox GL JS · Pune PCMC</text>
+          </svg>
+        </div>
+        <div class="mob-map-info">
+          <div class="mob-gps-card">
+            <div class="mob-gps-label" id="gpsLabel">Pipe Location</div>
+            <div class="mob-gps-val" id="gpsVal">18.5210°N, 73.8590°E</div>
+            <div class="mob-gps-addr" id="gpsAddr">Kasba Peth, Pune 411011</div>
+          </div>
+          <button class="mob-nav-btn">📍 Open Google Maps</button>
+          <div class="mob-status-btns">
+            <button class="msb start" onclick="mobStartJob()">▶ Start Job</button>
+            <button class="msb flag">⚑ Flag</button>
+          </div>
+          <button class="msb resolve" style="width:100%" onclick="mobResolve()">✓ Mark Resolved</button>
+        </div>
+      </div>
+      <!-- RESOLVED -->
+      <div class="mob-screen" id="ms-resolved">
+        <div class="mob-resolved">
+          <div class="mob-res-banner">
+            <div class="mob-res-icon">✅</div>
+            <div class="mob-res-title" id="resTitle">Resolved!</div>
+            <div class="mob-res-sub" id="resSub">Kasba Peth Segment 7 — Burst Repaired</div>
+            <div class="mob-res-note">⬡ IBM Redis → WebSocket<br>Dashboard map updated to GREEN instantly</div>
+          </div>
+          <div style="margin-top:12px;font-size:9px;color:#475569;text-align:center">watsonx Assistant notified manager<br>App Connect logged to PCMC report</div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <!-- STEP DOTS -->
+  <div class="step-indicator">
+    <div class="step-dot done" id="sd0"></div>
+    <div class="step-dot" id="sd1"></div>
+    <div class="step-dot" id="sd2"></div>
+    <div class="step-dot" id="sd3"></div>
+    <div class="step-dot" id="sd4"></div>
+  </div>
+  <div class="mob-screen-label" id="mobLabel">Waiting for simulation…</div>
+  <div style="font-size:9px;color:#334155;text-align:center;margin-top:4px;padding:0 8px;line-height:1.5">Use the buttons above to trigger events and watch both screens react live</div>
+</div>
+
+</div><!-- end .split -->
+
+<script>
+// ── SVG PIPE STATE TABLE ──────────────────────────────────────────────────
+// Maps pipe id → { status, name } for JS-driven colour updates
+const pipeState = {
+  7:{name:'Kasba Peth Main',status:'critical',age:71,mat:'Cast Iron',risk:87,zone:'Kasba Peth'},
+  8:{name:'Kasba East',status:'healthy',age:45,mat:'PVC',risk:30,zone:'Kasba Peth'},
+  9:{name:'Kasba South',status:'healthy',age:38,mat:'Ductile Iron',risk:25,zone:'Kasba Peth'},
+  5:{name:'Pimpri Main',status:'high',age:55,mat:'Cast Iron',risk:73,zone:'Pimpri'},
+  6:{name:'Pimpri North',status:'healthy',age:22,mat:'HDPE',risk:18,zone:'Pimpri'},
+  19:{name:'Pimpri West',status:'medium',age:48,mat:'Cast Iron',risk:62,zone:'Pimpri'},
+  20:{name:'Pimpri East',status:'healthy',age:15,mat:'HDPE',risk:12,zone:'Pimpri'},
+  3:{name:'Chinchwad Main',status:'resolved',age:60,mat:'Cast Iron',risk:40,zone:'Chinchwad'},
+  4:{name:'Chinchwad South',status:'healthy',age:28,mat:'Ductile Iron',risk:22,zone:'Chinchwad'},
+  12:{name:'Akurdi Main',status:'healthy',age:52,mat:'Cast Iron',risk:55,zone:'Akurdi'},
+  13:{name:'Akurdi North',status:'healthy',age:18,mat:'PVC',risk:15,zone:'Akurdi'},
+  23:{name:'Nigdi Central',status:'medium',age:50,mat:'Cast Iron',risk:65,zone:'Nigdi'},
+  24:{name:'Nigdi East',status:'healthy',age:12,mat:'HDPE',risk:10,zone:'Nigdi'},
+  1:{name:'Shivajinagar Main',status:'healthy',age:35,mat:'Ductile Iron',risk:32,zone:'Shivajinagar'},
+  2:{name:'FC Road Line',status:'healthy',age:20,mat:'PVC',risk:18,zone:'Shivajinagar'},
+  15:{name:'Kothrud Main',status:'healthy',age:25,mat:'Ductile Iron',risk:22,zone:'Kothrud'},
+  16:{name:'Karve Road',status:'healthy',age:32,mat:'Cast Iron',risk:38,zone:'Kothrud'},
+  17:{name:'Hadapsar Main',status:'healthy',age:18,mat:'HDPE',risk:15,zone:'Hadapsar'},
+  18:{name:'Magarpatta Line',status:'healthy',age:10,mat:'PVC',risk:8,zone:'Hadapsar'},
+  25:{name:'Trunk Main A',status:'healthy',age:40,mat:'Ductile Iron',risk:35,zone:'Trunk'},
+  26:{name:'Trunk Main B',status:'healthy',age:38,mat:'Ductile Iron',risk:33,zone:'Trunk'},
+  27:{name:'Trunk Main C',status:'healthy',age:42,mat:'Cast Iron',risk:48,zone:'Trunk'},
+};
+const colMap={critical:'#ef4444',high:'#f97316',medium:'#eab308',healthy:'#22c55e',resolved:'#64748b'};
+const wtMap={critical:'5',high:'4',medium:'3.5',healthy:'2.5',resolved:'2'};
+
+// Apply colour to a pipe SVG element by id
+function setPipeColor(id,status){
+  const el=document.getElementById('pipe-'+id);
+  if(!el)return;
+  el.setAttribute('stroke',colMap[status]);
+  el.setAttribute('stroke-width',wtMap[status]);
+  el.setAttribute('opacity',status==='resolved'?'0.5':'1');
+  el.setAttribute('stroke-dasharray',status==='resolved'?'7,4':'');
+  // glow element
+  const glow=document.getElementById('pipe-glow-'+id)||document.getElementById('pipe-'+id+'-glow');
+  if(glow){
+    glow.setAttribute('stroke',colMap[status]);
+    glow.style.display=(status==='critical'||status==='high')?'':'none';
+  }
+}
+
+// Update all pipes from pipeState
+function drawPipes(){
+  Object.keys(pipeState).forEach(id=>setPipeColor(id,pipeState[id].status));
+}
+
+// Show/hide alert pins
+function drawPins(){
+  [7,5,19,12].forEach(id=>{
+    const pin=document.getElementById('pin-'+id);
+    if(!pin)return;
+    const s=pipeState[id]?pipeState[id].status:'healthy';
+    pin.style.display=(s==='critical'||s==='high'||s==='medium')?'':'none';
+    // Update pin colour
+    const circles=pin.querySelectorAll('circle');
+    circles.forEach(c=>{ if(c.getAttribute('r')<12)c.setAttribute('fill',colMap[s]); });
+  });
+}
+
+// Wire up pipe hover tooltips
+document.querySelectorAll('.pipe-line').forEach(el=>{
+  el.style.cursor='pointer';
+  el.addEventListener('mouseenter',function(e){
+    const id=this.getAttribute('data-id');
+    const age=this.getAttribute('data-age');
+    const mat=this.getAttribute('data-mat');
+    const risk=this.getAttribute('data-risk');
+    const zone=this.getAttribute('data-zone');
+    const state=pipeState[id];
+    const status=state?state.status:'healthy';
+    const name=state?state.name:('Segment '+id);
+    const tip=document.getElementById('pipeTip');
+    document.getElementById('ptName').textContent=name;
+    document.getElementById('ptZone').textContent=zone;
+    document.getElementById('ptStatus').textContent=status.toUpperCase();
+    document.getElementById('ptStatus').className='tv '+(status==='critical'||status==='high'?'tr':status==='healthy'||status==='resolved'?'tg':'');
+    document.getElementById('ptMat').textContent=mat;
+    document.getElementById('ptAge').textContent=age+' years';
+    document.getElementById('ptAge').className='tv '+(parseInt(age)>50?'tr':'');
+    document.getElementById('ptRisk').textContent=risk+'/100';
+    document.getElementById('ptRisk').className='tv '+(parseInt(risk)>70?'tr':'');
+    tip.style.display='block';
+    const mapArea=document.getElementById('mapArea');
+    const rect=mapArea.getBoundingClientRect();
+    let tx=e.clientX-rect.left+14;
+    let ty=e.clientY-rect.top-20;
+    if(tx+170>rect.width)tx=tx-180;
+    tip.style.left=tx+'px';tip.style.top=ty+'px';
+  });
+  el.addEventListener('mousemove',function(e){
+    const tip=document.getElementById('pipeTip');
+    const mapArea=document.getElementById('mapArea');
+    const rect=mapArea.getBoundingClientRect();
+    let tx=e.clientX-rect.left+14;
+    let ty=e.clientY-rect.top-20;
+    if(tx+170>rect.width)tx=tx-180;
+    tip.style.left=tx+'px';tip.style.top=ty+'px';
+  });
+  el.addEventListener('mouseleave',function(){
+    document.getElementById('pipeTip').style.display='none';
+  });
+  // click: select matching alert
+  el.addEventListener('click',function(){
+    const id=parseInt(this.getAttribute('data-id'));
+    const mapping={7:1,5:2,19:3,3:4};
+    if(mapping[id]){
+      const item=document.getElementById('ai-'+(Object.values(mapping).indexOf(mapping[id])+1));
+      selectAlert(mapping[id],document.getElementById('ai-'+mapping[id]));
+    }
+  });
+});
+
+drawPipes(); drawPins();
+
+// Alert data
+const alertData={
+  1:{zone:'Kasba Peth — Seg. 7',sub:'Water Main · Cast Iron',sev:'cr',sevTxt:'CRITICAL',type:'Pipe Burst',conf:'92%',loss:'1,200 L/hr',pres:'28 PSI ↓',flow:'+340 L/min spike',ph:'7.2 Normal ✓',contam:'CLEAN',mat:'Cast Iron',age:'71 years',risk:'87/100',ppe:['Hard Hat','Water Gloves','Safety Boots'],acts:['Close Zone 4 isolation valve','Excavate near Kasba Peth junction','Replace 150mm cast iron section','Pressure test at 80 PSI']},
+  2:{zone:'Pimpri — Seg. 5',sub:'Water Main · Cast Iron',sev:'hi',sevTxt:'HIGH',type:'Pipe Burst',conf:'81%',loss:'820 L/hr',pres:'31 PSI ↓',flow:'+210 L/min spike',ph:'7.0 Normal ✓',contam:'CLEAN',mat:'Cast Iron',age:'55 years',risk:'73/100',ppe:['Hard Hat','Water Gloves','Safety Boots'],acts:['Close Pimpri Zone B valve','Excavate near Pimpri Main','Replace 125mm section','Pressure test at 70 PSI']},
+  3:{zone:'Pimpri — Seg. 19',sub:'Distribution Line · Cast Iron',sev:'me',sevTxt:'MEDIUM',type:'Chemical Runoff',conf:'74%',loss:'Contamination',pres:'58 PSI',flow:'Normal',ph:'6.1 ↓ (low)',contam:'CHEMICAL',mat:'Cast Iron',age:'48 years',risk:'62/100',ppe:['Chemical Gloves','Safety Goggles','Reflective Vest'],acts:['Isolate segment','Test for chemicals','Notify PCMC Health Officer','Flush & retest']},
+  4:{zone:'Chinchwad — Seg. 3',sub:'Main Line · Cast Iron',sev:'re',sevTxt:'RESOLVED',type:'Burst',conf:'—',loss:'Fixed',pres:'Normal',flow:'Normal',ph:'Normal',contam:'CLEAN',mat:'Cast Iron',age:'60 years',risk:'40/100',ppe:[],acts:['Completed']},
+  c2:{zone:'Akurdi — Seg. 12',sub:'Water Main · Cast Iron',sev:'hi',sevTxt:'HIGH',type:'Bacterial Contamination',conf:'87%',loss:'Contamination',pres:'52 PSI',flow:'Normal',ph:'5.6 ↓ (WHO min 6.5)',contam:'BACTERIAL',mat:'Cast Iron',age:'52 years',risk:'78/100',ppe:['Full Face Shield','Chemical Gloves','Hazmat Suit'],acts:['Isolate Akurdi segment valve','Do NOT flush — bacterial protocol','Apply chlorination treatment','Retest before reopening']},
+};
+
+let currentAlert=1;
+function selectAlert(id,el){
+  document.querySelectorAll('.a-item').forEach(x=>x.classList.remove('sel'));
+  if(el)el.classList.add('sel');
+  const d=alertData[id];if(!d)return;
+  currentAlert=id;
+  document.getElementById('dpZone').textContent=d.zone;
+  document.getElementById('dpSub').textContent=d.sub;
+  document.getElementById('dpBadges').innerHTML=`<span class="dpb ${d.sev}">● ${d.sevTxt}</span><span class="dpb type">${d.type}</span><span class="dpb ibm">Granite TS</span>`;
+  document.getElementById('dpBody').innerHTML=`<div class="dp-sec">AI Detection</div><div class="kv"><span class="k">Confidence</span><span class="v g">${d.conf}</span></div><div class="kv"><span class="k">Est. Loss</span><span class="v r">${d.loss}</span></div><div class="kv"><span class="k">IBM Model</span><span class="v b">Granite TS + AutoAI</span></div><div class="dp-sec">Sensor Readings</div><div class="kv"><span class="k">Pressure</span><span class="v ${d.pres.includes('↓')?'r':'g'}">${d.pres}</span></div><div class="kv"><span class="k">Flow Rate</span><span class="v ${d.flow.includes('spike')?'o':'g'}">${d.flow}</span></div><div class="kv"><span class="k">pH</span><span class="v ${d.ph.includes('↓')?'r':'g'}">${d.ph}</span></div><div class="kv"><span class="k">Contamination</span><span class="v ${d.contam==='CLEAN'?'g':'r'}">${d.contam}</span></div><div class="dp-sec">Pipe Info</div><div class="kv"><span class="k">Material</span><span class="v o">${d.mat}</span></div><div class="kv"><span class="k">Age</span><span class="v o">${d.age}</span></div><div class="kv"><span class="k">Risk Score</span><span class="v r">${d.risk}</span></div>${d.ppe.length?`<div class="dp-sec">PPE Required</div><div class="ppe-wrap">${d.ppe.map(p=>`<span class="ppe">${p}</span>`).join('')}</div>`:''}<div class="dp-sec">Actions</div>${d.acts.map((a,i)=>`<div class="act-item"><div class="act-num">${i+1}</div>${a}</div>`).join('')}`;
+}
+selectAlert(1,document.getElementById('ai-1'));
+
+// Chat
+const chatMap={'burst':'Burst alerts: Seg.7 Kasba Peth (CRITICAL, 1,200 L/hr) and Seg.5 Pimpri (HIGH, 820 L/hr). Both cast iron, 55-71 years old.','kasba':'Zone 4 (Kasba Peth) CRITICAL burst on Seg.7. 71yr cast iron, pressure dropped 37 PSI. Granite confidence: 92%. Dispatch immediately.','water lost':'Est. total loss today: ~2,020 L/hr across 2 burst alerts. Projected daily: ~48,480 litres. Kasba Peth 59% of loss.','contamination':'Chemical Runoff on Pimpri Seg.19 (pH 6.1, MEDIUM). No bacterial or heavy metal threats active currently.','critical':'Most critical: Seg.7 Kasba Peth. 71yr cast iron, 37 PSI drop, 1,200 L/hr. Risk: 87/100. Granite confidence: 92%.','pimpri':'Pimpri: HIGH burst Seg.5 (820 L/hr) and MEDIUM chemical Seg.19. Two separate crews needed.','risk':'Highest risk: Seg.7 (87), Seg.12 (78), Seg.5 (73), Seg.23 (65). All cast iron, 48-71 years.','default':'watsonx.ai monitoring 18 segments across Pune PCMC. 1 CRITICAL, 2 HIGH, 1 MEDIUM active. Est. loss: 2,020 L/hr.'};
+function sendChat(){
+  const inp=document.getElementById('chatInp');const q=inp.value.trim();if(!q)return;
+  const msgs=document.getElementById('chatMsgs');
+  msgs.innerHTML+=`<div class="cmsg u"><span>${q}</span></div>`;
+  const key=Object.keys(chatMap).find(k=>q.toLowerCase().includes(k))||'default';
+  setTimeout(()=>{msgs.innerHTML+=`<div class="cmsg b"><span>${chatMap[key]}</span></div>`;msgs.scrollTop=msgs.scrollHeight;},500);
+  inp.value='';msgs.scrollTop=msgs.scrollHeight;
+}
+
+function assignCrew(){
+  const sel=document.getElementById('crewSel');const crew=sel.value;
+  if(!crew){toast('⚠ Select a crew member first','info');return;}
+  const btn=document.getElementById('assignBtn');
+  btn.textContent=`✓ Dispatched to ${crew.split('·')[0].trim()}`;
+  btn.style.background='linear-gradient(135deg,#166534,#15803d)';btn.disabled=true;
+  setStep(4);toast(`⚡ ${crew.split('·')[0].trim()} dispatched via watsonx Assistant`,'ok');
+  setTimeout(()=>mobPush(),1200);
+}
+
+function mobGo(sid){
+  document.querySelectorAll('.mob-screen').forEach(s=>s.classList.remove('active'));
+  document.getElementById(sid).classList.add('active');
+  const labels={'ms-idle':'Waiting for assignment…','ms-notif':'📲 Push notification received!','ms-detail':'Viewing task details','ms-nav':'Navigating to site','ms-resolved':'✅ Job resolved!'};
+  document.getElementById('mobLabel').textContent=labels[sid]||'';
+  const dots=['ms-idle','ms-notif','ms-detail','ms-nav','ms-resolved'];const idx=dots.indexOf(sid);
+  document.querySelectorAll('.step-dot').forEach((d,i)=>{d.classList.remove('active','done');if(i<idx)d.classList.add('done');else if(i===idx)d.classList.add('active');});
+  const times={'ms-idle':'9:41','ms-notif':'9:42','ms-detail':'9:43','ms-nav':'9:44','ms-resolved':'9:52'};
+  document.getElementById('mobTime').textContent=times[sid]||'9:41';
+}
+
+function mobPush(){setStep(5);mobGo('ms-notif');toast('📱 watsonx Assistant push sent to Raj Kumar','info');}
+function mobStartJob(){toast('▶ Job started — status: IN_PROGRESS','info');}
+
+function mobResolve(){
+  mobGo('ms-resolved');setStep(6);
+  pipeState[7].status='resolved';
+  pipeState[12].status='resolved';
+  drawPipes();drawPins();
+  const ai1=document.getElementById('ai-1');
+  if(ai1){ai1.className='a-item re';ai1.querySelector('.a-name').textContent='✓ Pipe Burst';ai1.querySelector('.a-sev').className='a-sev re';ai1.querySelector('.a-sev').textContent='RESOLVED';}
+  document.getElementById('critCount').textContent='0';document.getElementById('alertCount').textContent='2 Open';
+  document.getElementById('btnResolve').disabled=true;
+  toast('✅ Segment resolved — Dashboard updated to GREEN via Redis → WebSocket','ok');
+}
+
+let simRunning=false,timerInterval=null,timerSec=0;
+function startTimer(){
+  timerSec=0;const el=document.getElementById('simTimer');el.style.display='flex';
+  timerInterval=setInterval(()=>{timerSec++;const m=String(Math.floor(timerSec/60)).padStart(2,'0');const s=String(timerSec%60).padStart(2,'0');el.textContent=`T + ${m}:${s}`;},1000);
+}
+function stopTimer(){clearInterval(timerInterval);}
+
+function setStep(n){
+  for(let i=1;i<=6;i++){const el=document.getElementById('sp'+i);if(!el)continue;el.classList.remove('active','done');if(i<n)el.classList.add('done');else if(i===n)el.classList.add('active');}
+}
+
+function simBurst(){
+  if(simRunning)return;simRunning=true;
+  document.getElementById('btnBurst').disabled=true;document.getElementById('btnContam').disabled=true;
+  setStep(1);startTimer();toast('📡 Sensor anomaly detected on Segment 7 — Kasba Peth','crit');
+  setTimeout(()=>{setStep(2);toast('🧠 IBM Granite Time Series: BURST confirmed · Conf: 92%','info');},2000);
+  setTimeout(()=>{
+    setStep(3);
+    pipeState[7].status='critical';
+    drawPipes();drawPins();
+    const list=document.getElementById('alertList');
+    const ni=document.createElement('div');ni.className='a-item cr sel';ni.id='ai-new';
+    ni.onclick=function(){selectAlert(1,this)};
+    ni.innerHTML=`<div class="a-top"><span class="a-name">🔴 NEW Burst</span><span class="a-sev cr">CRITICAL</span></div><div class="a-loc">Segment 7 · Kasba Peth</div><div class="a-meta"><span>Just now</span><span class="a-conf">92%</span></div>`;
+    list.insertBefore(ni,list.firstChild);
+    document.getElementById('critCount').textContent='2';document.getElementById('alertCount').textContent='4 Open';
+    selectAlert(1,ni);
+    toast('🗺️ Segment 7 turned RED on Pune map — WebSocket broadcast','crit');
+  },4000);
+  setTimeout(()=>{document.getElementById('btnResolve').disabled=false;toast('👩‍💼 Alert visible — assign crew from detail panel →','info');},5500);
+}
+
+function simContam(){
+  if(simRunning)return;simRunning=true;
+  document.getElementById('btnBurst').disabled=true;document.getElementById('btnContam').disabled=true;
+  setStep(1);startTimer();toast('📡 Water quality anomaly on Segment 12 — Akurdi','crit');
+  setTimeout(()=>{setStep(2);toast('🧪 AutoAI XGBoost: BACTERIAL contamination · pH 5.6 · Conf: 87%','crit');},2000);
+  setTimeout(()=>{
+    setStep(3);
+    pipeState[12].status='high';
+    drawPipes();drawPins();
+    const list=document.getElementById('alertList');
+    const ni=document.createElement('div');ni.className='a-item hi';ni.id='ai-new2';
+    ni.onclick=function(){selectAlert('c2',this)};
+    ni.innerHTML=`<div class="a-top"><span class="a-name">🟠 NEW Bacterial</span><span class="a-sev hi">HIGH</span></div><div class="a-loc">Segment 12 · Akurdi</div><div class="a-meta"><span>Just now</span><span class="a-conf">87%</span></div>`;
+    list.insertBefore(ni,list.firstChild);
+    document.getElementById('highCount').textContent='3';document.getElementById('alertCount').textContent='4 Open';
+    selectAlert('c2',ni);
+    // Update mobile for contamination
+    document.getElementById('notifTitle').textContent='🟠 HIGH: Bacterial Contamination';document.getElementById('notifTitle').style.color='#d97706';document.getElementById('notifCard').style.borderLeftColor='#f97316';document.getElementById('notifBody').textContent='Segment 12 · Akurdi\npH 5.6 · Do NOT flush · Hazmat protocol';document.getElementById('mobSevBadge').textContent='HIGH';document.getElementById('mobSevBadge').style.background='#f97316';document.getElementById('mobHeroType').textContent='☣️ Bacterial Contamination';document.getElementById('mobHeroType').style.color='#fdba74';document.getElementById('mobHeroSeg').textContent='Segment 12 · Akurdi · Cast Iron · 52 yrs';document.getElementById('mobHeroDesc').textContent='AutoAI: pH dropped to 5.6 (WHO min 6.5). Bacterial intrusion confirmed. Conf: 87%.';document.getElementById('mobPres').textContent='52 PSI';document.getElementById('mobPres').className='mv';document.getElementById('mobFlow').textContent='Normal';document.getElementById('mobFlow').className='mv g';document.getElementById('mobPH').textContent='5.6 ↓ (WHO min 6.5)';document.getElementById('mobPH').className='mv r';document.getElementById('mobContam').textContent='BACTERIAL';document.getElementById('mobContam').className='mv r';document.getElementById('mobPPERow').innerHTML='<span class="mob-ppe">😷 Full Face Shield</span><span class="mob-ppe">🧤 Chemical Gloves</span><span class="mob-ppe">🦺 Hazmat Suit</span>';document.getElementById('mobActions').innerHTML='<div class="mob-act"><div class="mob-act-num">1</div>Isolate Akurdi segment valve</div><div class="mob-act"><div class="mob-act-num">2</div>Do NOT flush — bacterial protocol</div><div class="mob-act"><div class="mob-act-num">3</div>Apply chlorination treatment</div><div class="mob-act"><div class="mob-act-num">4</div>Retest before reopening</div>';document.getElementById('gpsVal').textContent='18.6460°N, 73.7760°E';document.getElementById('gpsAddr').textContent='Akurdi, Pune 411035';document.getElementById('mobDist').textContent='1.2 km away';document.getElementById('resTitle').textContent='Contamination Contained!';document.getElementById('resSub').textContent='Akurdi Segment 12 — Chlorinated & Cleared';
+    toast('🟠 Segment 12 turned ORANGE · Bacterial contamination alert','info');
+  },4000);
+  setTimeout(()=>{document.getElementById('btnResolve').disabled=false;toast('👩‍💼 Contamination alert visible — assign specialist crew →','info');},5500);
+}
+
+function simResolve(){setStep(6);mobResolve();stopTimer();document.getElementById('simTimer').style.display='none';}
+
+function simReset(){
+  simRunning=false;stopTimer();document.getElementById('simTimer').style.display='none';
+  document.getElementById('btnBurst').disabled=false;document.getElementById('btnContam').disabled=false;document.getElementById('btnResolve').disabled=true;
+  pipeState[7].status='critical';pipeState[12].status='healthy';
+  drawPipes();drawPins();
+  ['ai-new','ai-new2'].forEach(id=>{const el=document.getElementById(id);if(el)el.remove();});
+  document.getElementById('critCount').textContent='1';document.getElementById('highCount').textContent='2';document.getElementById('alertCount').textContent='3 Open';
+  const ai1=document.getElementById('ai-1');if(ai1){ai1.className='a-item cr';ai1.querySelector('.a-name').textContent='🔴 Pipe Burst';ai1.querySelector('.a-sev').className='a-sev cr';ai1.querySelector('.a-sev').textContent='CRITICAL';}
+  const ab=document.getElementById('assignBtn');ab.textContent='⚡ Dispatch Crew';ab.style.background='';ab.disabled=false;document.getElementById('crewSel').value='';
+  document.getElementById('notifTitle').textContent='🔴 CRITICAL: Pipe Burst';document.getElementById('notifTitle').style.color='#dc2626';document.getElementById('notifCard').style.borderLeftColor='#ef4444';document.getElementById('notifBody').textContent='Segment 7 · Kasba Peth\nEst. 1,200 L/hr loss · Close Zone 4 valve first\nPPE: Hard Hat + Water Gloves';document.getElementById('mobSevBadge').textContent='CRITICAL';document.getElementById('mobSevBadge').style.background='#ef4444';document.getElementById('mobHeroType').textContent='🔧 Pipe Burst';document.getElementById('mobHeroType').style.color='#fca5a5';document.getElementById('mobHeroSeg').textContent='Segment 7 · Kasba Peth · Cast Iron · 71 yrs';document.getElementById('mobHeroDesc').textContent='IBM Granite: Pressure dropped 37 PSI in 90 sec. Est. 1,200 L/hr loss. No contamination. Conf: 92%.';document.getElementById('mobPres').textContent='28 PSI ↓';document.getElementById('mobPres').className='mv r';document.getElementById('mobFlow').textContent='+340 L/min spike';document.getElementById('mobFlow').className='mv o';document.getElementById('mobPH').textContent='7.2 Normal ✓';document.getElementById('mobPH').className='mv g';document.getElementById('mobContam').textContent='CLEAN';document.getElementById('mobContam').className='mv g';document.getElementById('mobPPERow').innerHTML='<span class="mob-ppe">🪖 Hard Hat</span><span class="mob-ppe">🧤 Water Gloves</span><span class="mob-ppe">👢 Safety Boots</span>';document.getElementById('mobActions').innerHTML='<div class="mob-act"><div class="mob-act-num">1</div>Close Zone 4 isolation valve</div><div class="mob-act"><div class="mob-act-num">2</div>Excavate at GPS coordinates</div><div class="mob-act"><div class="mob-act-num">3</div>Replace 150mm cast iron section</div><div class="mob-act"><div class="mob-act-num">4</div>Pressure test at 80 PSI</div>';document.getElementById('gpsVal').textContent='18.5210°N, 73.8590°E';document.getElementById('gpsAddr').textContent='Kasba Peth, Pune 411011';document.getElementById('mobDist').textContent='700m away';document.getElementById('resTitle').textContent='Resolved!';document.getElementById('resSub').textContent='Kasba Peth Segment 7 — Burst Repaired';
+  mobGo('ms-idle');selectAlert(1,document.getElementById('ai-1'));
+  for(let i=1;i<=6;i++){const el=document.getElementById('sp'+i);if(el)el.classList.remove('active','done');}
+  toast('↺ Demo reset — ready for next simulation','info');
+}
+
+let toastTimer;
+function toast(msg,type='info'){
+  const el=document.getElementById('toast');el.textContent=msg;el.className=`toast ${type} show`;
+  clearTimeout(toastTimer);toastTimer=setTimeout(()=>el.classList.remove('show'),3500);
+}
+</script>
+</body>
+</html>
