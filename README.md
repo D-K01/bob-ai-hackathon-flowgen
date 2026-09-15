@@ -41,11 +41,11 @@ Uses IBM technologies such as watsonx.ai, IBM Granite, IBM App Connect, IBM Inst
 
 | Category | Technologies |
 |---|---|
-| **Languages** | e.g., Python, TypeScript] |
-| **Frameworks** | [e.g., FastAPI, React] |
-| **IBM Technologies** | [e.g., watsonx.ai, IBM Bob, IBM Cloud] |
-| **Databases** | [e.g., PostgreSQL, Redis] |
-| **Other** | [e.g., Docker, GitHub Actions] |
+| **Languages** | HTML, CSS, JavaScript, Python |
+| **Frameworks** | React, FastAPI |
+| **IBM Technologies** | BM Bob, watsonx.ai, IBM Granite, IBM Cloud |
+| **Databases** | PostgreSQL |
+| **Other** |Git, GitHub, REST APIs, GIS/Map Integration|
 
 ---
 
