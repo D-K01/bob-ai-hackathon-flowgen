@@ -1,0 +1,487 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Flowgen AI — Repair Crew Mobile App</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,"Segoe UI",system-ui,sans-serif;background:#0f1117;color:#1f2328;font-size:13px;min-height:100vh;display:flex;flex-direction:column;align-items:center;padding:32px 24px 48px}
+/* PAGE HEADER */
+.page-title{color:#38bdf8;font-size:22px;font-weight:800;letter-spacing:-.3px;margin-bottom:4px;text-align:center}
+.page-sub{color:#64748b;font-size:13px;text-align:center;margin-bottom:32px}
+/* PHONE ROW */
+.phones-row{display:flex;gap:32px;justify-content:center;align-items:flex-start;flex-wrap:wrap}
+.phone-wrap{display:flex;flex-direction:column;align-items:center;gap:12px}
+.screen-label{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:#38bdf8;background:rgba(56,189,248,.1);border:1px solid rgba(56,189,248,.2);padding:3px 12px;border-radius:20px}
+/* PHONE SHELL */
+.phone{width:240px;background:#1a1a2e;border-radius:36px;padding:10px;box-shadow:0 0 0 1px #2d2d4e, 0 20px 60px rgba(0,0,0,.6), inset 0 1px 0 rgba(255,255,255,.05)}
+.phone-inner{background:#fff;border-radius:28px;overflow:hidden;position:relative;min-height:480px;display:flex;flex-direction:column}
+.status-bar{background:#0f1117;height:26px;display:flex;align-items:center;justify-content:space-between;padding:0 16px;flex-shrink:0}
+.status-bar-time{font-size:10px;font-weight:700;color:#fff}
+.status-bar-icons{font-size:9px;color:#fff;display:flex;gap:4px;align-items:center}
+.notch{width:70px;height:16px;background:#0f1117;border-radius:0 0 14px 14px;position:absolute;top:26px;left:50%;transform:translateX(-50%);z-index:10}
+.screen-content{flex:1;display:flex;flex-direction:column;margin-top:16px}
+/* ─ SCREEN 1: LOGIN ─ */
+.login-bg{background:linear-gradient(160deg,#0d1321 0%,#162032 60%,#1e3a5f 100%);flex:1;padding:28px 20px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:0}
+.login-logo{font-size:28px;font-weight:900;color:#38bdf8;letter-spacing:-.5px;margin-bottom:4px}
+.login-sub{font-size:11px;color:#475569;margin-bottom:28px;text-align:center}
+.login-field{width:100%;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);border-radius:10px;padding:9px 12px;font-size:12px;color:#e2e8f0;margin-bottom:10px;font-family:inherit}
+.login-field::placeholder{color:#475569}
+.login-btn{width:100%;background:linear-gradient(135deg,#1d4ed8,#6366f1);border:none;color:#fff;padding:10px;border-radius:10px;font-size:13px;font-weight:700;margin-top:4px;cursor:pointer;font-family:inherit;letter-spacing:.01em}
+.login-note{font-size:9px;color:#334155;margin-top:12px;text-align:center}
+.login-ibm{margin-top:16px;font-size:9px;font-weight:700;color:#38bdf8;background:rgba(56,189,248,.1);padding:3px 10px;border-radius:4px;border:1px solid rgba(56,189,248,.2)}
+/* ─ SCREEN 2: TASK LIST ─ */
+.screen-topbar{background:#0d1321;padding:10px 14px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
+.screen-topbar-title{font-size:13px;font-weight:800;color:#e2e8f0}
+.notif-dot{background:#ef4444;color:#fff;font-size:9px;font-weight:700;padding:1px 6px;border-radius:10px}
+.screen-bg-light{background:#f8f9fb;flex:1;overflow-y:auto;padding:10px}
+.crew-chip{background:#111827;border-radius:8px;padding:8px 10px;margin-bottom:10px;display:flex;align-items:center;gap:8px}
+.crew-avatar{width:28px;height:28px;border-radius:50%;background:linear-gradient(135deg,#1d4ed8,#6366f1);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:#fff;flex-shrink:0}
+.crew-name{font-size:11px;font-weight:700;color:#e2e8f0}
+.crew-zone{font-size:9px;color:#64748b}
+.crew-status{margin-left:auto;font-size:9px;font-weight:700;color:#4ade80;background:rgba(34,197,94,.1);padding:2px 7px;border-radius:4px}
+.task-section-title{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:#94a3b8;margin-bottom:6px}
+.task-card{background:#fff;border-radius:10px;border-left:4px solid #e5e7eb;padding:10px 12px;margin-bottom:8px;box-shadow:0 1px 3px rgba(0,0,0,.06);cursor:pointer}
+.task-card.critical{border-left-color:#ef4444}
+.task-card.high{border-left-color:#f97316}
+.task-card.resolved{border-left-color:#22c55e;opacity:.6}
+.task-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:3px}
+.task-name{font-size:12px;font-weight:700;color:#1f2328}
+.task-sev{font-size:9px;font-weight:700;padding:1px 6px;border-radius:3px}
+.task-sev.critical{background:#fee2e2;color:#dc2626}
+.task-sev.high{background:#ffedd5;color:#c2410c}
+.task-sev.resolved{background:#dcfce7;color:#166534}
+.task-loc{font-size:10px;color:#64748b;margin-bottom:3px}
+.task-meta{display:flex;justify-content:space-between;font-size:9px;color:#9ca3af}
+.task-loss{color:#ef4444;font-weight:600}
+/* ─ SCREEN 3: TASK DETAIL ─ */
+.detail-topbar{background:#7f1d1d;padding:9px 14px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
+.detail-back{font-size:11px;color:#fca5a5;font-weight:600}
+.detail-sev-badge{background:#ef4444;color:#fff;font-size:10px;font-weight:700;padding:2px 8px;border-radius:4px}
+.detail-bg{background:#f8f9fb;flex:1;overflow-y:auto}
+.detail-hero{background:linear-gradient(135deg,#1a0000,#3d0000);padding:12px 14px;border-bottom:1px solid #fee2e2}
+.detail-hero-type{font-size:16px;font-weight:800;color:#fca5a5;margin-bottom:2px}
+.detail-hero-seg{font-size:11px;color:#f87171}
+.detail-hero-desc{font-size:10px;color:#fca5a5;margin-top:6px;background:rgba(239,68,68,.15);padding:5px 8px;border-radius:6px;border-left:2px solid #ef4444}
+.dsection{padding:10px 14px;border-bottom:1px solid #e5e7eb}
+.dsec-title{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:#94a3b8;margin-bottom:7px}
+.dkv{display:flex;justify-content:space-between;font-size:11px;padding:3px 0;border-bottom:1px solid #f3f4f6}
+.dkv:last-child{border-bottom:none}
+.dkv .dk{color:#6b7280}
+.dkv .dv{font-weight:600;color:#1f2328}
+.dkv .dv.danger{color:#dc2626}
+.dkv .dv.warn{color:#d97706}
+.dkv .dv.ok{color:#16a34a}
+.ppe-row{display:flex;flex-wrap:wrap;gap:4px;padding:8px 14px;border-bottom:1px solid #e5e7eb}
+.ppe-tag{background:#fef3c7;color:#92400e;font-size:9px;font-weight:700;padding:3px 8px;border-radius:4px;border:1px solid rgba(146,64,14,.2)}
+.action-row{display:flex;gap:8px;align-items:flex-start;padding:6px 14px;border-bottom:1px solid #f3f4f6;font-size:11px;color:#374151}
+.action-row:last-child{border-bottom:none}
+.anum{width:18px;height:18px;border-radius:50%;background:#dbeafe;color:#1d4ed8;font-size:9px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px}
+/* ─ SCREEN 4: MAP / NAVIGATE ─ */
+.map-topbar{background:#14532d;padding:9px 14px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
+.map-back{font-size:11px;color:#86efac;font-weight:600}
+.map-dist{font-size:10px;font-weight:700;color:#4ade80;background:rgba(34,197,94,.15);padding:2px 8px;border-radius:4px}
+.map-view{position:relative;height:160px;overflow:hidden;background:#1a2744;flex-shrink:0}
+.map-svg{width:100%;height:100%}
+.map-info{padding:8px 14px;background:#f8f9fb;flex:1}
+.gps-card{background:#fff;border-radius:8px;padding:8px 10px;margin-bottom:8px;border:1px solid #e5e7eb}
+.gps-label{font-size:9px;font-weight:700;text-transform:uppercase;color:#9ca3af;margin-bottom:3px}
+.gps-val{font-size:11px;font-weight:600;color:#1f2328}
+.gps-addr{font-size:10px;color:#6b7280}
+.nav-btn{display:block;background:linear-gradient(135deg,#16a34a,#15803d);color:#fff;border:none;border-radius:10px;padding:10px 14px;font-size:12px;font-weight:700;margin:0 14px 8px;cursor:pointer;text-align:center;width:calc(100% - 28px);font-family:inherit}
+.status-section{padding:8px 14px}
+.status-section-title{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:#94a3b8;margin-bottom:7px}
+.status-btns{display:flex;gap:6px;margin-bottom:6px}
+.sbtn{flex:1;border:none;border-radius:8px;padding:8px 4px;font-size:10px;font-weight:700;cursor:pointer;text-align:center;font-family:inherit}
+.sbtn.start{background:#dbeafe;color:#1d4ed8}
+.sbtn.flag{background:#f3f4f6;color:#6b7280;border:1px solid #e5e7eb}
+.sbtn.resolve{background:linear-gradient(135deg,#16a34a,#15803d);color:#fff;padding:9px}
+.resolve-note{font-size:9px;color:#9ca3af;text-align:center;padding:0 14px 8px}
+/* ─ SCREEN 5: STATUS UPDATE ─ */
+.status-topbar{background:#1e3a5f;padding:9px 14px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
+.status-header{padding:14px;background:#f8f9fb;flex:1;display:flex;flex-direction:column;gap:8px}
+.status-progress{background:#fff;border-radius:10px;padding:10px 12px;border:1px solid #e5e7eb}
+.sp-title{font-size:10px;font-weight:700;color:#374151;margin-bottom:8px}
+.sp-step{display:flex;align-items:center;gap:8px;margin-bottom:5px;font-size:10px}
+.sp-step:last-child{margin-bottom:0}
+.sp-icon{width:18px;height:18px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;flex-shrink:0}
+.sp-icon.done{background:#dcfce7;color:#16a34a}
+.sp-icon.active{background:#dbeafe;color:#1d4ed8;animation:stepPulse 1.5s infinite}
+.sp-icon.pending{background:#f3f4f6;color:#9ca3af}
+@keyframes stepPulse{0%,100%{background:#dbeafe}50%{background:#bfdbfe}}
+.sp-text.done{color:#16a34a;font-weight:600}
+.sp-text.active{color:#1d4ed8;font-weight:700}
+.sp-text.pending{color:#9ca3af}
+.note-area{background:#fff;border-radius:10px;padding:10px 12px;border:1px solid #e5e7eb}
+.note-area textarea{width:100%;background:#f8f9fb;border:1px solid #e5e7eb;border-radius:6px;padding:6px 8px;font-size:10px;color:#374151;resize:none;height:48px;font-family:inherit}
+.resolved-banner{background:linear-gradient(135deg,#dcfce7,#bbf7d0);border:1px solid #86efac;border-radius:10px;padding:12px;text-align:center}
+.rb-icon{font-size:24px;margin-bottom:4px}
+.rb-title{font-size:13px;font-weight:800;color:#166534}
+.rb-sub{font-size:10px;color:#15803d;margin-top:2px}
+.rb-map-note{font-size:9px;color:#16a34a;margin-top:6px;background:rgba(34,197,94,.1);padding:4px 8px;border-radius:4px}
+/* ARROWS between phones */
+.arrow-wrap{display:flex;flex-direction:column;align-items:center;justify-content:center;padding-top:80px;color:#334155}
+.arrow-svg{width:24px;height:24px}
+.arrow-label{font-size:9px;color:#475569;text-align:center;margin-top:4px;max-width:50px}
+/* BOTTOM LEGEND */
+.bottom-legend{margin-top:36px;background:#0d1321;border:1px solid #1e2d40;border-radius:10px;padding:16px 24px;max-width:880px;width:100%}
+.bl-title{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:#64748b;margin-bottom:10px}
+.bl-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+.bl-item{background:#111827;border-radius:6px;padding:8px 10px}
+.bl-screen{font-size:10px;font-weight:700;color:#38bdf8;margin-bottom:4px}
+.bl-desc{font-size:10px;color:#64748b;line-height:1.4}
+</style>
+</head>
+<body>
+
+<div class="page-title">⬡ Flowgen AI — Repair Crew Mobile App</div>
+<div class="page-sub">React Native · IBM watsonx Assistant · Expo Push Notifications · Mapbox Mobile SDK</div>
+
+<div class="phones-row">
+
+  <!-- ─────────── PHONE 1: LOGIN ─────────── -->
+  <div class="phone-wrap">
+    <div class="screen-label">Screen 1 — Login</div>
+    <div class="phone">
+      <div class="phone-inner">
+        <div class="status-bar">
+          <span class="status-bar-time">9:41</span>
+          <div class="status-bar-icons">▶ 5G ■■■</div>
+        </div>
+        <div class="notch"></div>
+        <div class="screen-content">
+          <div class="login-bg">
+            <div class="login-logo">⬡ Flowgen</div>
+            <div class="login-sub">PCMC Water Network<br>Field Crew Portal</div>
+            <input class="login-field" type="text" placeholder="Employee ID" value="RK-4472">
+            <input class="login-field" type="password" placeholder="Password" value="••••••••">
+            <button class="login-btn">Sign In to Field App</button>
+            <div class="login-note">Access restricted to authorised PCMC crew only</div>
+            <div class="login-ibm">Secured by IBM Cloud IAM</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ARROW 1 -->
+  <div class="arrow-wrap">
+    <svg class="arrow-svg" viewBox="0 0 24 24" fill="none" stroke="#334155" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+    <div class="arrow-label">Login success</div>
+  </div>
+
+  <!-- ─────────── PHONE 2: TASK LIST ─────────── -->
+  <div class="phone-wrap">
+    <div class="screen-label">Screen 2 — My Tasks</div>
+    <div class="phone">
+      <div class="phone-inner">
+        <div class="status-bar">
+          <span class="status-bar-time">9:42</span>
+          <div class="status-bar-icons">▶ 5G ■■■</div>
+        </div>
+        <div class="notch"></div>
+        <div class="screen-content">
+          <div class="screen-topbar">
+            <span class="screen-topbar-title">My Tasks</span>
+            <span class="notif-dot">2 New</span>
+          </div>
+          <div class="screen-bg-light">
+            <div class="crew-chip">
+              <div class="crew-avatar">RK</div>
+              <div>
+                <div class="crew-name">Raj Kumar</div>
+                <div class="crew-zone">Zone 4 · Pune PCMC</div>
+              </div>
+              <div class="crew-status">● Available</div>
+            </div>
+            <div class="task-section-title">Active Tasks</div>
+            <div class="task-card critical">
+              <div class="task-top">
+                <span class="task-name">🔴 Pipe Burst</span>
+                <span class="task-sev critical">CRITICAL</span>
+              </div>
+              <div class="task-loc">Segment 7 · Kasba Peth</div>
+              <div class="task-meta">
+                <span>2 min ago · By: Mgr. Priya</span>
+                <span class="task-loss">1,200 L/hr</span>
+              </div>
+            </div>
+            <div class="task-card high">
+              <div class="task-top">
+                <span class="task-name">🟠 Bacterial</span>
+                <span class="task-sev high">HIGH</span>
+              </div>
+              <div class="task-loc">Segment 12 · Akurdi</div>
+              <div class="task-meta">
+                <span>8 min ago · By: Mgr. Priya</span>
+                <span style="color:#f97316;font-weight:600">pH 5.6</span>
+              </div>
+            </div>
+            <div class="task-section-title" style="margin-top:8px">Completed Today</div>
+            <div class="task-card resolved">
+              <div class="task-top">
+                <span class="task-name" style="color:#6b7280">✓ Chemical Runoff</span>
+                <span class="task-sev resolved">DONE</span>
+              </div>
+              <div class="task-loc" style="color:#9ca3af">Segment 19 · Pimpri</div>
+              <div class="task-meta"><span>Resolved 1 hr ago</span></div>
+            </div>
+            <div style="text-align:center;font-size:9px;color:#9ca3af;padding:8px 0">Tap any task to see full details →</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ARROW 2 -->
+  <div class="arrow-wrap">
+    <svg class="arrow-svg" viewBox="0 0 24 24" fill="none" stroke="#334155" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+    <div class="arrow-label">Tap CRITICAL task</div>
+  </div>
+
+  <!-- ─────────── PHONE 3: TASK DETAIL ─────────── -->
+  <div class="phone-wrap">
+    <div class="screen-label">Screen 3 — Task Detail</div>
+    <div class="phone">
+      <div class="phone-inner">
+        <div class="status-bar">
+          <span class="status-bar-time">9:43</span>
+          <div class="status-bar-icons">▶ 5G ■■■</div>
+        </div>
+        <div class="notch"></div>
+        <div class="screen-content">
+          <div class="detail-topbar">
+            <span class="detail-back">← Tasks</span>
+            <span class="detail-sev-badge">CRITICAL</span>
+          </div>
+          <div class="detail-bg">
+            <div class="detail-hero">
+              <div class="detail-hero-type">🔧 Pipe Burst</div>
+              <div class="detail-hero-seg">Segment 7 · Kasba Peth · Cast Iron · 71 yrs</div>
+              <div class="detail-hero-desc">IBM Granite detected: Pressure dropped 37 PSI in 90 sec. Est. loss 1,200 L/hr. Contamination: CLEAN. Confidence: 92%.</div>
+            </div>
+            <div class="dsection">
+              <div class="dsec-title">Sensor Readings at Alert</div>
+              <div class="dkv"><span class="dk">Pressure</span><span class="dv danger">28 PSI ↓ (was 65)</span></div>
+              <div class="dkv"><span class="dk">Flow Rate</span><span class="dv warn">+340 L/min spike</span></div>
+              <div class="dkv"><span class="dk">pH / Turbidity</span><span class="dv ok">7.2 / 0.8 NTU ✓</span></div>
+              <div class="dkv"><span class="dk">Contamination</span><span class="dv ok">CLEAN</span></div>
+            </div>
+            <div class="dsection">
+              <div class="dsec-title">Pipe Information</div>
+              <div class="dkv"><span class="dk">Material</span><span class="dv warn">Cast Iron (High Risk)</span></div>
+              <div class="dkv"><span class="dk">Age</span><span class="dv warn">71 years</span></div>
+              <div class="dkv"><span class="dk">Diameter</span><span class="dv">150 mm</span></div>
+              <div class="dkv"><span class="dk">Last Maintained</span><span class="dv warn">2019</span></div>
+            </div>
+            <div style="padding:8px 14px 4px;border-bottom:1px solid #e5e7eb">
+              <div class="dsec-title">PPE Required</div>
+            </div>
+            <div class="ppe-row">
+              <span class="ppe-tag">🪖 Hard Hat</span>
+              <span class="ppe-tag">🧤 Water Gloves</span>
+              <span class="ppe-tag">👢 Safety Boots</span>
+              <span class="ppe-tag">🦺 Hi-Vis Vest</span>
+            </div>
+            <div class="dsection">
+              <div class="dsec-title">Step-by-Step Actions</div>
+            </div>
+            <div class="action-row"><div class="anum">1</div>Close Zone 4 isolation valve</div>
+            <div class="action-row"><div class="anum">2</div>Excavate at GPS coordinates</div>
+            <div class="action-row"><div class="anum">3</div>Replace 150mm cast iron section</div>
+            <div class="action-row"><div class="anum">4</div>Pressure test at 80 PSI</div>
+            <div style="height:10px"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ARROW 3 -->
+  <div class="arrow-wrap">
+    <svg class="arrow-svg" viewBox="0 0 24 24" fill="none" stroke="#334155" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+    <div class="arrow-label">Navigate to site</div>
+  </div>
+
+  <!-- ─────────── PHONE 4: MAP / NAVIGATE ─────────── -->
+  <div class="phone-wrap">
+    <div class="screen-label">Screen 4 — Navigate</div>
+    <div class="phone">
+      <div class="phone-inner">
+        <div class="status-bar">
+          <span class="status-bar-time">9:44</span>
+          <div class="status-bar-icons">▶ 5G ■■■</div>
+        </div>
+        <div class="notch"></div>
+        <div class="screen-content">
+          <div class="map-topbar">
+            <span class="map-back">← Detail</span>
+            <span class="map-dist">700m away</span>
+          </div>
+          <!-- SVG Map -->
+          <div class="map-view">
+            <svg class="map-svg" viewBox="0 0 240 160" xmlns="http://www.w3.org/2000/svg">
+              <!-- Background -->
+              <rect width="240" height="160" fill="#1a2744"/>
+              <!-- Water body (Mutha river suggestion) -->
+              <path d="M0,90 Q40,85 80,92 Q120,98 160,88 Q200,80 240,86 L240,100 Q200,94 160,102 Q120,108 80,104 Q40,98 0,104Z" fill="#1e3a5f" opacity=".8"/>
+              <!-- Roads -->
+              <line x1="30" y1="0" x2="30" y2="160" stroke="#2d3d5e" stroke-width="5"/>
+              <line x1="80" y1="0" x2="80" y2="160" stroke="#2d3d5e" stroke-width="4"/>
+              <line x1="150" y1="0" x2="150" y2="160" stroke="#2d3d5e" stroke-width="4"/>
+              <line x1="200" y1="0" x2="200" y2="160" stroke="#2d3d5e" stroke-width="3"/>
+              <line x1="0" y1="40" x2="240" y2="40" stroke="#2d3d5e" stroke-width="5"/>
+              <line x1="0" y1="75" x2="240" y2="75" stroke="#2d3d5e" stroke-width="4"/>
+              <line x1="0" y1="120" x2="240" y2="120" stroke="#2d3d5e" stroke-width="3"/>
+              <!-- Road labels -->
+              <text x="32" y="35" font-size="5" fill="#3d5070" font-family="sans-serif">JM Rd</text>
+              <text x="82" y="35" font-size="5" fill="#3d5070" font-family="sans-serif">FC Rd</text>
+              <text x="5" y="38" font-size="5" fill="#3d5070" font-family="sans-serif">Kasba St</text>
+              <!-- Buildings (grey blocks) -->
+              <rect x="10" y="8" width="16" height="12" fill="#243050" rx="1"/>
+              <rect x="35" y="8" width="20" height="14" fill="#243050" rx="1"/>
+              <rect x="90" y="8" width="18" height="10" fill="#243050" rx="1"/>
+              <rect x="115" y="8" width="22" height="13" fill="#243050" rx="1"/>
+              <rect x="160" y="8" width="15" height="11" fill="#243050" rx="1"/>
+              <rect x="205" y="8" width="18" height="12" fill="#243050" rx="1"/>
+              <rect x="10" y="48" width="14" height="10" fill="#243050" rx="1"/>
+              <rect x="35" y="46" width="20" height="12" fill="#243050" rx="1"/>
+              <rect x="90" y="46" width="22" height="10" fill="#243050" rx="1"/>
+              <rect x="160" y="48" width="16" height="12" fill="#243050" rx="1"/>
+              <rect x="205" y="46" width="20" height="11" fill="#243050" rx="1"/>
+              <rect x="10" y="106" width="16" height="10" fill="#243050" rx="1"/>
+              <rect x="35" y="108" width="18" height="12" fill="#243050" rx="1"/>
+              <rect x="90" y="106" width="20" height="10" fill="#243050" rx="1"/>
+              <rect x="160" y="106" width="15" height="11" fill="#243050" rx="1"/>
+              <!-- PIPE segments -->
+              <line x1="30" y1="75" x2="150" y2="75" stroke="#22c55e" stroke-width="3" stroke-linecap="round"/>
+              <!-- CRITICAL segment highlighted -->
+              <line x1="150" y1="40" x2="200" y2="75" stroke="#ef4444" stroke-width="4" stroke-linecap="round" opacity=".9">
+                <animate attributeName="opacity" values="1;0.3;1" dur="1.2s" repeatCount="indefinite"/>
+              </line>
+              <line x1="150" y1="40" x2="200" y2="75" stroke="#ef4444" stroke-width="12" stroke-linecap="round" opacity=".15">
+                <animate attributeName="opacity" values=".2;0.05;.2" dur="1.2s" repeatCount="indefinite"/>
+              </line>
+              <!-- More pipes -->
+              <line x1="30" y1="40" x2="150" y2="40" stroke="#22c55e" stroke-width="2.5" stroke-linecap="round" opacity=".7"/>
+              <line x1="80" y1="40" x2="80" y2="75" stroke="#eab308" stroke-width="2.5" stroke-linecap="round"/>
+              <line x1="30" y1="120" x2="200" y2="120" stroke="#22c55e" stroke-width="2" stroke-linecap="round" opacity=".6"/>
+              <!-- Route line (dashed) from crew to pipe -->
+              <line x1="55" y1="130" x2="180" y2="58" stroke="#38bdf8" stroke-width="1.5" stroke-dasharray="5,3" opacity=".8"/>
+              <!-- Crew location -->
+              <circle cx="55" cy="130" r="7" fill="#1d4ed8" opacity=".25"/>
+              <circle cx="55" cy="130" r="5" fill="#1d4ed8"/>
+              <circle cx="55" cy="130" r="3" fill="#fff"/>
+              <text x="60" y="143" font-size="6" fill="#38bdf8" font-family="sans-serif">You</text>
+              <!-- Pipe alert pin -->
+              <circle cx="180" cy="58" r="8" fill="#ef4444" opacity=".25">
+                <animate attributeName="r" values="8;14;8" dur="1.5s" repeatCount="indefinite"/>
+                <animate attributeName="opacity" values=".25;0;.25" dur="1.5s" repeatCount="indefinite"/>
+              </circle>
+              <circle cx="180" cy="58" r="7" fill="#ef4444"/>
+              <text x="176" y="62" font-size="8" fill="#fff" font-weight="bold" font-family="sans-serif">!</text>
+              <text x="164" y="50" font-size="6" fill="#fca5a5" font-family="sans-serif">Seg. 7</text>
+              <!-- IBM watermark -->
+              <text x="3" y="157" font-size="5.5" fill="#2d3d5e" font-family="sans-serif">Mapbox GL JS · IBM watsonx</text>
+              <text x="190" y="157" font-size="5.5" fill="#2d3d5e" font-family="sans-serif">© OSM</text>
+            </svg>
+          </div>
+          <div class="map-info">
+            <div class="gps-card">
+              <div class="gps-label">Pipe Location</div>
+              <div class="gps-val">18.5210°N, 73.8590°E</div>
+              <div class="gps-addr">Kasba Peth, Pune 411011</div>
+            </div>
+            <button class="nav-btn">📍 Open Google Maps Navigation</button>
+            <div class="status-section">
+              <div class="status-section-title">Update Job Status</div>
+              <div class="status-btns">
+                <button class="sbtn start">▶ Start Job</button>
+                <button class="sbtn flag">⚑ Flag Issue</button>
+              </div>
+              <button class="sbtn resolve" style="width:100%">✓ Mark as Resolved</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ARROW 4 -->
+  <div class="arrow-wrap">
+    <svg class="arrow-svg" viewBox="0 0 24 24" fill="none" stroke="#334155" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+    <div class="arrow-label">Mark resolved</div>
+  </div>
+
+  <!-- ─────────── PHONE 5: RESOLVED ─────────── -->
+  <div class="phone-wrap">
+    <div class="screen-label">Screen 5 — Resolved</div>
+    <div class="phone">
+      <div class="phone-inner">
+        <div class="status-bar">
+          <span class="status-bar-time">9:52</span>
+          <div class="status-bar-icons">▶ 5G ■■■</div>
+        </div>
+        <div class="notch"></div>
+        <div class="screen-content">
+          <div class="status-topbar">
+            <span style="font-size:11px;color:#93c5fd;font-weight:600">← Navigate</span>
+            <span style="font-size:10px;color:#64748b">Segment 7</span>
+          </div>
+          <div class="status-header">
+            <div class="resolved-banner">
+              <div class="rb-icon">✅</div>
+              <div class="rb-title">Job Resolved!</div>
+              <div class="rb-sub">Kasba Peth Segment 7 · Burst Repaired</div>
+              <div class="rb-map-note">⬡ Dashboard map updated to GREEN instantly via IBM Redis → WebSocket</div>
+            </div>
+            <div class="status-progress">
+              <div class="sp-title">Repair Progress</div>
+              <div class="sp-step"><div class="sp-icon done">✓</div><span class="sp-text done">Isolated Zone 4 valve</span></div>
+              <div class="sp-step"><div class="sp-icon done">✓</div><span class="sp-text done">Excavated pipe location</span></div>
+              <div class="sp-step"><div class="sp-icon done">✓</div><span class="sp-text done">Replaced 150mm section</span></div>
+              <div class="sp-step"><div class="sp-icon done">✓</div><span class="sp-text done">Pressure tested @ 80 PSI</span></div>
+            </div>
+            <div class="note-area">
+              <div class="dsec-title" style="margin-bottom:5px">Resolution Notes</div>
+              <textarea readonly>Replaced 2m cast iron section. Pressure test passed at 82 PSI. Zone 4 valve reopened. No further leakage detected.</textarea>
+            </div>
+            <div style="background:#111827;border-radius:8px;padding:8px 10px;text-align:center">
+              <div style="font-size:9px;font-weight:700;color:#38bdf8;margin-bottom:2px">⬡ IBM App Connect</div>
+              <div style="font-size:9px;color:#475569">Data logged to PCMC daily report</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- BOTTOM LEGEND -->
+<div class="bottom-legend">
+  <div class="bl-title">5-Screen Flow Summary</div>
+  <div class="bl-grid">
+    <div class="bl-item">
+      <div class="bl-screen">Screen 1 — Login</div>
+      <div class="bl-desc">Secure IBM Cloud IAM auth. JWT stored in device SecureStore. Crew-level access only.</div>
+    </div>
+    <div class="bl-item">
+      <div class="bl-screen">Screen 2 — My Tasks</div>
+      <div class="bl-desc">Personal task list from watsonx Assistant push. CRITICAL alerts always first. Real-time via WebSocket.</div>
+    </div>
+    <div class="bl-item">
+      <div class="bl-screen">Screen 3 — Task Detail</div>
+      <div class="bl-desc">Full AI context: sensor data, pipe metadata, PPE checklist, step-by-step repair actions — all from IBM watsonx.ai.</div>
+    </div>
+    <div class="bl-item">
+      <div class="bl-screen">Screen 4 — Navigate</div>
+      <div class="bl-desc">Mapbox mobile SDK with real Pune GPS. One-tap Google Maps handoff. Start / Flag / Resolve buttons.</div>
+    </div>
+  </div>
+  <div style="margin-top:10px;font-size:10px;color:#475569;text-align:center">Screen 5 — Resolved: IBM Redis → Node WebSocket → Dashboard map turns GREEN in real time. IBM App Connect logs to PCMC daily report.</div>
+</div>
+
+</body>
+</html>

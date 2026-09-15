@@ -1,0 +1,720 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Flowgen AI — Municipal Dashboard</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;font-family:-apple-system,"Segoe UI",system-ui,sans-serif;background:#0f1117;color:#e2e8f0;font-size:13px;overflow:hidden}
+/* ── LAYOUT ── */
+.shell{display:flex;flex-direction:column;height:100vh}
+/* TOP NAV */
+.topnav{height:48px;background:#0d1321;border-bottom:1px solid #1e2d40;display:flex;align-items:center;padding:0 16px;gap:16px;flex-shrink:0;z-index:1000}
+.logo{font-size:15px;font-weight:800;color:#38bdf8;letter-spacing:-.3px;display:flex;align-items:center;gap:6px}
+.logo-icon{width:22px;height:22px;background:linear-gradient(135deg,#0ea5e9,#6366f1);border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:11px}
+.nav-divider{width:1px;height:20px;background:#1e2d40}
+.stat-pill{display:flex;align-items:center;gap:5px;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:700}
+.stat-pill.crit{background:rgba(239,68,68,.15);color:#f87171;border:1px solid rgba(239,68,68,.3)}
+.stat-pill.high{background:rgba(251,146,60,.12);color:#fb923c;border:1px solid rgba(251,146,60,.25)}
+.stat-pill.ok{background:rgba(34,197,94,.1);color:#4ade80;border:1px solid rgba(34,197,94,.2)}
+.stat-pill.info{background:rgba(56,189,248,.1);color:#38bdf8;border:1px solid rgba(56,189,248,.2)}
+.pulse{width:7px;height:7px;border-radius:50%;animation:dot-pulse 1.4s infinite}
+.pulse.red{background:#ef4444;box-shadow:0 0 0 0 rgba(239,68,68,.6)}
+.pulse.orange{background:#f97316;animation:none}
+.pulse.green{background:#22c55e;animation:none}
+.pulse.blue{background:#38bdf8;animation:none}
+@keyframes dot-pulse{0%{box-shadow:0 0 0 0 rgba(239,68,68,.6)}70%{box-shadow:0 0 0 6px rgba(239,68,68,0)}100%{box-shadow:0 0 0 0 rgba(239,68,68,0)}}
+.nav-spacer{flex:1}
+.nav-btn{background:#1e2d40;border:1px solid #2d3f55;color:#94a3b8;padding:4px 12px;border-radius:6px;font-size:11px;cursor:pointer;font-family:inherit}
+.nav-btn:hover{background:#253550;color:#e2e8f0}
+.nav-avatar{width:28px;height:28px;border-radius:50%;background:linear-gradient(135deg,#6366f1,#8b5cf6);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:#fff;cursor:pointer}
+/* ── MAIN BODY ── */
+.main{display:flex;flex:1;overflow:hidden}
+/* LEFT PANEL */
+.left-panel{width:260px;background:#0d1321;border-right:1px solid #1e2d40;display:flex;flex-direction:column;flex-shrink:0;overflow:hidden}
+.panel-header{padding:12px 14px 8px;border-bottom:1px solid #1e2d40;display:flex;align-items:center;justify-content:space-between}
+.panel-title{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:#64748b}
+.filter-row{display:flex;gap:4px;padding:8px 14px;border-bottom:1px solid #1e2d40}
+.filter-btn{flex:1;background:#1e2d40;border:none;color:#64748b;font-size:10px;font-weight:600;padding:4px 0;border-radius:4px;cursor:pointer;font-family:inherit}
+.filter-btn.active{background:#1d4ed8;color:#93c5fd}
+.alerts-list{flex:1;overflow-y:auto;padding:8px}
+.alerts-list::-webkit-scrollbar{width:3px}
+.alerts-list::-webkit-scrollbar-track{background:#0d1321}
+.alerts-list::-webkit-scrollbar-thumb{background:#1e2d40;border-radius:2px}
+.alert-item{background:#111827;border-radius:8px;border-left:3px solid #374151;padding:10px 11px;margin-bottom:6px;cursor:pointer;transition:background .15s}
+.alert-item:hover{background:#162032}
+.alert-item.selected{background:#162032;border-left-color:#38bdf8}
+.alert-item.critical{border-left-color:#ef4444}
+.alert-item.high{border-left-color:#f97316}
+.alert-item.medium{border-left-color:#eab308}
+.alert-item.resolved{border-left-color:#22c55e;opacity:.55}
+.ai-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:4px}
+.ai-type{font-size:11px;font-weight:700;color:#e2e8f0}
+.ai-sev{font-size:9px;font-weight:700;padding:1px 6px;border-radius:3px}
+.ai-sev.critical{background:rgba(239,68,68,.2);color:#fca5a5}
+.ai-sev.high{background:rgba(251,146,60,.18);color:#fdba74}
+.ai-sev.medium{background:rgba(234,179,8,.15);color:#fde047}
+.ai-sev.resolved{background:rgba(34,197,94,.12);color:#86efac}
+.ai-loc{font-size:10px;color:#64748b;margin-bottom:3px}
+.ai-meta{display:flex;justify-content:space-between;font-size:9px;color:#475569}
+.ai-conf{color:#38bdf8;font-weight:600}
+/* MAP AREA */
+.map-container{flex:1;position:relative;overflow:hidden}
+#map-svg{width:100%;height:100%;display:block;background:#0b1120}
+/* MAP OVERLAY CONTROLS */
+.map-controls{position:absolute;top:12px;right:12px;z-index:500;display:flex;flex-direction:column;gap:6px}
+.map-ctrl-btn{background:#0d1321cc;backdrop-filter:blur(4px);border:1px solid #1e2d40;color:#94a3b8;padding:6px 10px;border-radius:6px;font-size:10px;font-weight:600;cursor:pointer;white-space:nowrap}
+.map-ctrl-btn:hover{background:#162032;color:#e2e8f0}
+.map-ctrl-btn.active{background:#1d3a5e;color:#38bdf8;border-color:#1d4ed8}
+.legend-box{position:absolute;bottom:20px;left:12px;z-index:500;background:#0d1321e8;backdrop-filter:blur(6px);border:1px solid #1e2d40;border-radius:8px;padding:10px 12px;min-width:130px}
+.legend-title{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:#64748b;margin-bottom:7px}
+.legend-row{display:flex;align-items:center;gap:7px;margin-bottom:5px;font-size:10px;color:#94a3b8}
+.legend-line{width:22px;height:4px;border-radius:2px;flex-shrink:0}
+.ibm-badge{position:absolute;top:12px;left:12px;z-index:500;background:#0d1321cc;backdrop-filter:blur(4px);border:1px solid #1e2d40;border-radius:6px;padding:5px 10px;font-size:10px;font-weight:700;color:#38bdf8;display:flex;align-items:center;gap:5px}
+.ibm-dot{width:6px;height:6px;border-radius:50%;background:#22c55e;animation:dot-pulse 1.4s infinite;box-shadow:0 0 0 0 rgba(34,197,94,.6)}
+/* PIPE TOOLTIP */
+.pipe-tip{position:absolute;background:#0d1321;border:1px solid #1e2d40;border-radius:8px;padding:10px 13px;min-width:180px;pointer-events:none;z-index:800;display:none;box-shadow:0 8px 24px rgba(0,0,0,.5)}
+.pipe-tip .pt-title{font-size:12px;font-weight:700;color:#e2e8f0;margin-bottom:2px}
+.pipe-tip .pt-sub{font-size:10px;color:#64748b;margin-bottom:6px}
+.pipe-tip .pt-row{display:flex;justify-content:space-between;font-size:10px;padding:2px 0}
+.pipe-tip .pt-k{color:#64748b}
+.pipe-tip .pt-v{font-weight:600}
+.pipe-tip .pt-v.red{color:#f87171}
+.pipe-tip .pt-v.ok{color:#4ade80}
+/* SVG pipe animations */
+@keyframes pipePulse{0%,100%{opacity:1}50%{opacity:.4}}
+@keyframes pinBounce{0%,100%{transform:translateY(0)}50%{transform:translateY(-3px)}}
+/* RIGHT DETAIL PANEL */
+.right-panel{width:280px;background:#0d1321;border-left:1px solid #1e2d40;display:flex;flex-direction:column;flex-shrink:0;overflow:hidden}
+.detail-header{padding:12px 14px;border-bottom:1px solid #1e2d40}
+.detail-zone{font-size:16px;font-weight:800;color:#e2e8f0;margin-bottom:2px}
+.detail-sub{font-size:11px;color:#64748b}
+.detail-badges{display:flex;gap:6px;margin-top:8px;flex-wrap:wrap}
+.dbadge{font-size:10px;font-weight:700;padding:2px 8px;border-radius:4px}
+.dbadge.critical{background:rgba(239,68,68,.2);color:#fca5a5;border:1px solid rgba(239,68,68,.3)}
+.dbadge.high{background:rgba(251,146,60,.18);color:#fdba74;border:1px solid rgba(251,146,60,.3)}
+.dbadge.medium{background:rgba(234,179,8,.15);color:#fde047;border:1px solid rgba(234,179,8,.3)}
+.dbadge.burst{background:rgba(99,102,241,.2);color:#a5b4fc;border:1px solid rgba(99,102,241,.3)}
+.dbadge.ibm{background:rgba(56,189,248,.1);color:#38bdf8;border:1px solid rgba(56,189,248,.2)}
+.detail-body{flex:1;overflow-y:auto;padding:12px 14px}
+.detail-body::-webkit-scrollbar{width:3px}
+.detail-body::-webkit-scrollbar-thumb{background:#1e2d40;border-radius:2px}
+.section-head{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:#64748b;margin:14px 0 7px}
+.section-head:first-child{margin-top:0}
+.kv-row{display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px solid #111827;font-size:11px}
+.kv-row .k{color:#64748b}
+.kv-row .v{font-weight:600;color:#e2e8f0}
+.kv-row .v.danger{color:#f87171}
+.kv-row .v.warn{color:#fb923c}
+.kv-row .v.ok{color:#4ade80}
+.action-list{list-style:none;margin:0;padding:0}
+.action-list li{display:flex;gap:8px;align-items:flex-start;font-size:11px;color:#cbd5e1;padding:4px 0;border-bottom:1px solid #111827}
+.action-num{width:18px;height:18px;border-radius:50%;background:#1d3a5e;color:#38bdf8;font-size:9px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px}
+.ppe-wrap{display:flex;flex-wrap:wrap;gap:4px;margin-top:4px}
+.ppe-tag{background:#1e2d40;color:#fbbf24;font-size:9px;font-weight:600;padding:2px 7px;border-radius:4px;border:1px solid rgba(251,191,36,.2)}
+.assign-section{padding:12px 14px;border-top:1px solid #1e2d40;background:#0a0f1a}
+.assign-label{font-size:10px;font-weight:700;text-transform:uppercase;color:#64748b;margin-bottom:6px;letter-spacing:.05em}
+.assign-select{width:100%;background:#111827;border:1px solid #1e2d40;color:#e2e8f0;padding:6px 8px;border-radius:6px;font-size:11px;margin-bottom:8px;font-family:inherit;cursor:pointer}
+.assign-btn{width:100%;background:linear-gradient(135deg,#1d4ed8,#4f46e5);color:#fff;border:none;padding:8px;border-radius:6px;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;letter-spacing:.01em}
+.assign-btn:hover{background:linear-gradient(135deg,#2563eb,#6366f1)}
+/* WATSON CHAT */
+.chat-section{border-top:1px solid #1e2d40;background:#080d17}
+.chat-head{padding:8px 14px;display:flex;align-items:center;gap:6px;border-bottom:1px solid #1e2d40;cursor:pointer}
+.chat-head-title{font-size:11px;font-weight:700;color:#38bdf8}
+.chat-head-sub{font-size:9px;color:#475569;margin-left:auto}
+.chat-messages{padding:8px 14px;max-height:90px;overflow-y:auto}
+.chat-messages::-webkit-scrollbar{width:3px}
+.chat-messages::-webkit-scrollbar-thumb{background:#1e2d40}
+.chat-msg{font-size:10px;line-height:1.5;margin-bottom:5px}
+.chat-msg.user{color:#94a3b8;text-align:right}
+.chat-msg.user span{background:#1e2d40;padding:3px 8px;border-radius:6px 6px 2px 6px;display:inline-block}
+.chat-msg.bot span{background:#0c2140;color:#93c5fd;padding:3px 8px;border-radius:6px 6px 6px 2px;display:inline-block;border-left:2px solid #1d4ed8}
+.chat-input-row{display:flex;gap:6px;padding:8px 14px 10px}
+.chat-input{flex:1;background:#111827;border:1px solid #1e2d40;color:#e2e8f0;padding:5px 9px;border-radius:6px;font-size:11px;font-family:inherit}
+.chat-input::placeholder{color:#475569}
+.chat-send{background:#1d4ed8;border:none;color:#fff;padding:5px 10px;border-radius:6px;font-size:10px;font-weight:700;cursor:pointer;font-family:inherit}
+</style>
+</head>
+<body>
+<div class="shell">
+
+  <!-- TOP NAV -->
+  <nav class="topnav">
+    <div class="logo">
+      <div class="logo-icon">⬡</div>
+      Flowgen AI
+    </div>
+    <span style="font-size:10px;color:#334155;font-weight:600">PUNE PCMC</span>
+    <div class="nav-divider"></div>
+    <div class="stat-pill crit"><span class="pulse red"></span>3 Critical</div>
+    <div class="stat-pill high"><span class="pulse orange"></span>5 High</div>
+    <div class="stat-pill ok"><span class="pulse green"></span>87% Healthy</div>
+    <div class="stat-pill info"><span class="pulse blue"></span>Est. 4,200 L/hr loss</div>
+    <div class="nav-spacer"></div>
+    <button class="nav-btn">Network Report</button>
+    <button class="nav-btn">Settings</button>
+    <div class="nav-avatar">PM</div>
+  </nav>
+
+  <div class="main">
+
+    <!-- LEFT PANEL -->
+    <div class="left-panel">
+      <div class="panel-header">
+        <span class="panel-title">Live Alerts</span>
+        <span style="font-size:10px;color:#38bdf8;font-weight:600">8 Open</span>
+      </div>
+      <div class="filter-row">
+        <button class="filter-btn active">All</button>
+        <button class="filter-btn">Burst</button>
+        <button class="filter-btn">Contam.</button>
+        <button class="filter-btn">Risk</button>
+      </div>
+      <div class="alerts-list" id="alertsList">
+
+        <div class="alert-item critical selected" id="ai-1" onclick="selectAlert(1,this)">
+          <div class="ai-row">
+            <span class="ai-type">🔴 Pipe Burst</span>
+            <span class="ai-sev critical">CRITICAL</span>
+          </div>
+          <div class="ai-loc">Segment 7 · Kasba Peth</div>
+          <div class="ai-meta">
+            <span>2 min ago</span>
+            <span class="ai-conf">92% conf.</span>
+          </div>
+        </div>
+
+        <div class="alert-item high" id="ai-2" onclick="selectAlert(2,this)">
+          <div class="ai-row">
+            <span class="ai-type">🟠 Bacterial</span>
+            <span class="ai-sev high">HIGH</span>
+          </div>
+          <div class="ai-loc">Segment 12 · Akurdi</div>
+          <div class="ai-meta">
+            <span>8 min ago</span>
+            <span class="ai-conf">87% conf.</span>
+          </div>
+        </div>
+
+        <div class="alert-item high" id="ai-3" onclick="selectAlert(3,this)">
+          <div class="ai-row">
+            <span class="ai-type">🟠 Pipe Burst</span>
+            <span class="ai-sev high">HIGH</span>
+          </div>
+          <div class="ai-loc">Segment 5 · Pimpri</div>
+          <div class="ai-meta">
+            <span>14 min ago</span>
+            <span class="ai-conf">81% conf.</span>
+          </div>
+        </div>
+
+        <div class="alert-item medium" id="ai-4" onclick="selectAlert(4,this)">
+          <div class="ai-row">
+            <span class="ai-type">🟡 Chemical Runoff</span>
+            <span class="ai-sev medium">MEDIUM</span>
+          </div>
+          <div class="ai-loc">Segment 19 · Pimpri</div>
+          <div class="ai-meta">
+            <span>23 min ago</span>
+            <span class="ai-conf">74% conf.</span>
+          </div>
+        </div>
+
+        <div class="alert-item medium" id="ai-5" onclick="selectAlert(5,this)">
+          <div class="ai-row">
+            <span class="ai-type">🟡 Heavy Metal</span>
+            <span class="ai-sev medium">MEDIUM</span>
+          </div>
+          <div class="ai-loc">Segment 23 · Nigdi</div>
+          <div class="ai-meta">
+            <span>41 min ago</span>
+            <span class="ai-conf">70% conf.</span>
+          </div>
+        </div>
+
+        <div class="alert-item resolved" id="ai-6" onclick="selectAlert(6,this)">
+          <div class="ai-row">
+            <span class="ai-type">✓ Pipe Burst</span>
+            <span class="ai-sev resolved">RESOLVED</span>
+          </div>
+          <div class="ai-loc">Segment 3 · Chinchwad</div>
+          <div class="ai-meta">
+            <span>1 hr ago</span>
+            <span style="color:#4ade80;font-weight:600">Fixed</span>
+          </div>
+        </div>
+
+        <div class="alert-item resolved" id="ai-7" onclick="selectAlert(7,this)">
+          <div class="ai-row">
+            <span class="ai-type">✓ Bacterial</span>
+            <span class="ai-sev resolved">RESOLVED</span>
+          </div>
+          <div class="ai-loc">Segment 8 · Akurdi</div>
+          <div class="ai-meta">
+            <span>2 hr ago</span>
+            <span style="color:#4ade80;font-weight:600">Fixed</span>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- MAP — inline SVG Pune city map, fully offline -->
+    <div class="map-container" id="mapWrap">
+      <svg id="map-svg" viewBox="0 0 900 620" preserveAspectRatio="xMidYMid meet">
+        <defs>
+          <filter id="glow-red"><feGaussianBlur stdDeviation="3" result="blur"/><feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+          <filter id="glow-orange"><feGaussianBlur stdDeviation="2.5" result="blur"/><feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+        </defs>
+
+        <!-- Background -->
+        <rect width="900" height="620" fill="#0b1120"/>
+
+        <!-- ── ZONE FILLS ── -->
+        <g id="svg-zones" style="display:none">
+          <polygon points="320,320 420,280 480,340 440,400 360,390" fill="#1d4ed820" stroke="#1d4ed840" stroke-width="1"/>
+          <text x="390" y="350" fill="#475569" font-size="9" text-anchor="middle">Shivajinagar</text>
+          <polygon points="560,60 700,50 740,140 660,160 580,130" fill="#1d4ed815" stroke="#1d4ed830" stroke-width="1"/>
+          <text x="650" y="100" fill="#475569" font-size="9" text-anchor="middle">Pimpri-Chinchwad</text>
+          <polygon points="200,240 320,220 340,310 260,340 200,300" fill="#1d4ed815" stroke="#1d4ed830" stroke-width="1"/>
+          <text x="265" y="278" fill="#475569" font-size="9" text-anchor="middle">Kothrud</text>
+          <polygon points="680,280 800,260 820,360 740,380 670,340" fill="#1d4ed815" stroke="#1d4ed830" stroke-width="1"/>
+          <text x="750" y="320" fill="#475569" font-size="9" text-anchor="middle">Hadapsar</text>
+        </g>
+
+        <!-- ── ROAD NETWORK (background streets) ── -->
+        <g id="svg-roads" opacity="0.35">
+          <!-- Major roads -->
+          <polyline points="100,310 250,295 400,285 550,275 700,265 860,255" fill="none" stroke="#1e3a5f" stroke-width="3"/>
+          <polyline points="100,350 260,340 420,330 600,320 780,315 870,310" fill="none" stroke="#1e3a5f" stroke-width="2.5"/>
+          <polyline points="430,80 425,180 415,310 408,430 400,540 395,610" fill="none" stroke="#1e3a5f" stroke-width="3"/>
+          <polyline points="500,80 495,200 488,330 480,460 472,580" fill="none" stroke="#1e3a5f" stroke-width="2"/>
+          <!-- Ring roads / connectors -->
+          <polyline points="200,200 320,180 460,170 600,175 720,190 820,220" fill="none" stroke="#162a40" stroke-width="2"/>
+          <polyline points="180,420 300,410 440,405 580,400 720,395 840,390" fill="none" stroke="#162a40" stroke-width="2"/>
+          <polyline points="280,100 275,220 268,360 260,480 255,580" fill="none" stroke="#162a40" stroke-width="1.5"/>
+          <polyline points="640,100 635,220 628,360 620,480 615,580" fill="none" stroke="#162a40" stroke-width="1.5"/>
+        </g>
+
+        <!-- ── MUTHA RIVER ── -->
+        <g id="svg-river">
+          <polyline points="80,380 160,370 240,365 330,360 420,358 510,355 600,350 680,342 760,335 860,328"
+            fill="none" stroke="#1e4976" stroke-width="8" stroke-linecap="round" opacity="0.7"/>
+          <polyline points="80,386 160,376 240,371 330,366 420,364 510,361 600,356 680,348 760,341 860,334"
+            fill="none" stroke="#1a3d63" stroke-width="4" stroke-linecap="round" opacity="0.5"/>
+          <text x="280" y="356" fill="#2563a0" font-size="9" font-weight="600" opacity="0.8">Mutha River</text>
+        </g>
+
+        <!-- ── PIPE NETWORK ── -->
+        <g id="svg-pipes">
+          <!-- Trunk Mains -->
+          <line id="pipe-25" x1="415" y1="315" x2="620" y2="200" stroke="#22c55e" stroke-width="2.5" stroke-linecap="round" opacity="0.7" cursor="pointer"/>
+          <line id="pipe-26" x1="408" y1="325" x2="650" y2="225" stroke="#22c55e" stroke-width="2.5" stroke-linecap="round" opacity="0.7" cursor="pointer"/>
+          <line id="pipe-27" x1="420" y1="310" x2="700" y2="180" stroke="#22c55e" stroke-width="2.5" stroke-linecap="round" opacity="0.6" cursor="pointer"/>
+          <line id="pipe-28" x1="390" y1="330" x2="580" y2="420" stroke="#22c55e" stroke-width="2.5" stroke-linecap="round" opacity="0.6" cursor="pointer"/>
+          <!-- Kasba Peth — CRITICAL -->
+          <line id="pipe-7-glow" x1="392" y1="340" x2="430" y2="320" stroke="#ef444455" stroke-width="14" stroke-linecap="round" style="animation:pipePulse 1.2s infinite"/>
+          <line id="pipe-7" x1="392" y1="340" x2="430" y2="320" stroke="#ef4444" stroke-width="5" stroke-linecap="round" cursor="pointer" filter="url(#glow-red)"/>
+          <line id="pipe-8" x1="430" y1="320" x2="460" y2="305" stroke="#22c55e" stroke-width="2.5" stroke-linecap="round" cursor="pointer"/>
+          <line id="pipe-9" x1="392" y1="340" x2="368" y2="355" stroke="#22c55e" stroke-width="2.5" stroke-linecap="round" cursor="pointer"/>
+          <!-- Pimpri — HIGH -->
+          <line id="pipe-5-glow" x1="618" y1="148" x2="595" y2="175" stroke="#f9731655" stroke-width="12" stroke-linecap="round"/>
+          <line id="pipe-5" x1="618" y1="148" x2="595" y2="175" stroke="#f97316" stroke-width="4" stroke-linecap="round" cursor="pointer" filter="url(#glow-orange)"/>
+          <line id="pipe-6" x1="625" y1="135" x2="640" y2="158" stroke="#22c55e" stroke-width="2.5" stroke-linecap="round" cursor="pointer"/>
+          <!-- Pimpri West — MEDIUM -->
+          <line id="pipe-19" x1="608" y1="163" x2="585" y2="185" stroke="#eab308" stroke-width="3.5" stroke-linecap="round" cursor="pointer"/>
+          <line id="pipe-20" x1="622" y1="155" x2="645" y2="172" stroke="#22c55e" stroke-width="2.5" stroke-linecap="round" cursor="pointer"/>
+          <!-- Chinchwad — RESOLVED -->
+          <line id="pipe-3" x1="572" y1="195" x2="547" y2="218" stroke="#64748b" stroke-width="2" stroke-dasharray="6,4" stroke-linecap="round" cursor="pointer" opacity="0.6"/>
+          <line id="pipe-4" x1="540" y1="225" x2="518" y2="248" stroke="#22c55e" stroke-width="2.5" stroke-linecap="round" cursor="pointer"/>
+          <!-- Akurdi — HIGH -->
+          <line id="pipe-12-glow" x1="688" y1="105" x2="663" y2="132" stroke="#f9731655" stroke-width="12" stroke-linecap="round"/>
+          <line id="pipe-12" x1="688" y1="105" x2="663" y2="132" stroke="#f97316" stroke-width="4" stroke-linecap="round" cursor="pointer" filter="url(#glow-orange)"/>
+          <line id="pipe-13" x1="695" y1="118" x2="718" y2="140" stroke="#22c55e" stroke-width="2.5" stroke-linecap="round" cursor="pointer"/>
+          <line id="pipe-14" x1="663" y1="132" x2="640" y2="158" stroke="#22c55e" stroke-width="2.5" stroke-linecap="round" cursor="pointer"/>
+          <!-- Nigdi — MEDIUM -->
+          <line id="pipe-23" x1="720" y1="82" x2="695" y2="105" stroke="#eab308" stroke-width="3.5" stroke-linecap="round" cursor="pointer"/>
+          <line id="pipe-24" x1="732" y1="92" x2="755" y2="112" stroke="#22c55e" stroke-width="2.5" stroke-linecap="round" cursor="pointer"/>
+          <!-- Shivajinagar -->
+          <line id="pipe-1" x1="415" y1="295" x2="400" y2="320" stroke="#22c55e" stroke-width="2.5" stroke-linecap="round" cursor="pointer"/>
+          <line id="pipe-2" x1="408" y1="325" x2="425" y2="340" stroke="#22c55e" stroke-width="2.5" stroke-linecap="round" cursor="pointer"/>
+          <!-- Kothrud -->
+          <line id="pipe-15" x1="258" y1="385" x2="240" y2="405" stroke="#22c55e" stroke-width="2.5" stroke-linecap="round" cursor="pointer"/>
+          <line id="pipe-16" x1="265" y1="375" x2="248" y2="395" stroke="#22c55e" stroke-width="2.5" stroke-linecap="round" cursor="pointer"/>
+          <!-- Hadapsar -->
+          <line id="pipe-17" x1="755" y1="438" x2="735" y2="458" stroke="#22c55e" stroke-width="2.5" stroke-linecap="round" cursor="pointer"/>
+          <line id="pipe-18" x1="762" y1="448" x2="742" y2="468" stroke="#22c55e" stroke-width="2.5" stroke-linecap="round" cursor="pointer"/>
+        </g>
+
+        <!-- ── ALERT PINS ── -->
+        <g id="svg-alerts">
+          <!-- Kasba Peth — CRITICAL, Seg 7 -->
+          <g id="pin-7" cursor="pointer" onclick="selectAlert(1,document.getElementById('ai-1'))" style="animation:pinBounce 2s ease-in-out infinite">
+            <circle cx="411" cy="330" r="11" fill="#ef4444" stroke="#fff" stroke-width="2" opacity="0.95"/>
+            <circle cx="411" cy="330" r="17" fill="none" stroke="#ef444488" stroke-width="2" style="animation:pipePulse 1.2s infinite"/>
+            <text x="411" y="334" text-anchor="middle" fill="#fff" font-size="11" font-weight="900">!</text>
+          </g>
+          <!-- Akurdi — HIGH, Seg 12 -->
+          <g id="pin-12" cursor="pointer" onclick="selectAlert(2,document.getElementById('ai-2'))">
+            <circle cx="675" cy="119" r="10" fill="#f97316" stroke="#fff" stroke-width="2" opacity="0.95"/>
+            <text x="675" y="123" text-anchor="middle" fill="#fff" font-size="11" font-weight="900">!</text>
+          </g>
+          <!-- Pimpri — HIGH, Seg 5 -->
+          <g id="pin-5" cursor="pointer" onclick="selectAlert(3,document.getElementById('ai-3'))">
+            <circle cx="607" cy="162" r="10" fill="#f97316" stroke="#fff" stroke-width="2" opacity="0.95"/>
+            <text x="607" y="166" text-anchor="middle" fill="#fff" font-size="11" font-weight="900">!</text>
+          </g>
+          <!-- Pimpri West — MEDIUM, Seg 19 -->
+          <g id="pin-19" cursor="pointer" onclick="selectAlert(4,document.getElementById('ai-4'))">
+            <circle cx="597" cy="174" r="9" fill="#eab308" stroke="#fff" stroke-width="1.5" opacity="0.9"/>
+            <text x="597" y="178" text-anchor="middle" fill="#fff" font-size="10" font-weight="900">!</text>
+          </g>
+          <!-- Nigdi — MEDIUM, Seg 23 -->
+          <g id="pin-23" cursor="pointer" onclick="selectAlert(5,document.getElementById('ai-5'))">
+            <circle cx="708" cy="94" r="9" fill="#eab308" stroke="#fff" stroke-width="1.5" opacity="0.9"/>
+            <text x="708" y="98" text-anchor="middle" fill="#fff" font-size="10" font-weight="900">!</text>
+          </g>
+        </g>
+
+        <!-- ── ZONE LABELS ── -->
+        <g id="svg-zone-labels" font-size="9" font-weight="700" fill="#475569">
+          <rect x="395" y="349" width="62" height="14" rx="3" fill="#0d132188" stroke="#1e2d40" stroke-width="0.5"/>
+          <text x="426" y="359" text-anchor="middle">Kasba Peth</text>
+          <rect x="590" y="182" width="36" height="14" rx="3" fill="#0d132188" stroke="#1e2d40" stroke-width="0.5"/>
+          <text x="608" y="192" text-anchor="middle">Pimpri</text>
+          <rect x="534" y="225" width="52" height="14" rx="3" fill="#0d132188" stroke="#1e2d40" stroke-width="0.5"/>
+          <text x="560" y="235" text-anchor="middle">Chinchwad</text>
+          <rect x="655" y="142" width="36" height="14" rx="3" fill="#0d132188" stroke="#1e2d40" stroke-width="0.5"/>
+          <text x="673" y="152" text-anchor="middle">Akurdi</text>
+          <rect x="698" y="112" width="30" height="14" rx="3" fill="#0d132188" stroke="#1e2d40" stroke-width="0.5"/>
+          <text x="713" y="122" text-anchor="middle">Nigdi</text>
+          <rect x="386" y="295" width="60" height="14" rx="3" fill="#0d132188" stroke="#1e2d40" stroke-width="0.5"/>
+          <text x="416" y="305" text-anchor="middle">Shivajinagar</text>
+          <rect x="228" y="393" width="40" height="14" rx="3" fill="#0d132188" stroke="#1e2d40" stroke-width="0.5"/>
+          <text x="248" y="403" text-anchor="middle">Kothrud</text>
+          <rect x="730" y="456" width="44" height="14" rx="3" fill="#0d132188" stroke="#1e2d40" stroke-width="0.5"/>
+          <text x="752" y="466" text-anchor="middle">Hadapsar</text>
+        </g>
+
+        <!-- Selected pipe highlight ring -->
+        <circle id="map-highlight" cx="-999" cy="-999" r="22" fill="none" stroke="#38bdf8" stroke-width="2.5" stroke-dasharray="5,3" opacity="0.85" style="pointer-events:none"/>
+      </svg>
+
+      <!-- Pipe tooltip -->
+      <div class="pipe-tip" id="pipeTip">
+        <div class="pt-title" id="ptTitle"></div>
+        <div class="pt-sub" id="ptSub"></div>
+        <div class="pt-row"><span class="pt-k">Status</span><span class="pt-v" id="ptStatus"></span></div>
+        <div class="pt-row"><span class="pt-k">Material</span><span class="pt-v" id="ptMat"></span></div>
+        <div class="pt-row"><span class="pt-k">Age</span><span class="pt-v" id="ptAge"></span></div>
+        <div class="pt-row"><span class="pt-k">Risk Score</span><span class="pt-v" id="ptRisk"></span></div>
+      </div>
+
+      <!-- IBM Badge -->
+      <div class="ibm-badge">
+        <div class="ibm-dot"></div>
+        watsonx.ai — Live Monitoring
+      </div>
+
+      <!-- Map layer controls -->
+      <div class="map-controls">
+        <button class="map-ctrl-btn active" id="btnPipes" onclick="toggleLayer('pipes')">Pipeline Network</button>
+        <button class="map-ctrl-btn active" id="btnAlerts" onclick="toggleLayer('alerts')">Alert Markers</button>
+        <button class="map-ctrl-btn" id="btnRisk" onclick="toggleLayer('risk')">Risk Heatmap</button>
+        <button class="map-ctrl-btn" id="btnZones" onclick="toggleLayer('zones')">District Zones</button>
+      </div>
+
+      <!-- Legend -->
+      <div class="legend-box">
+        <div class="legend-title">Pipe Status</div>
+        <div class="legend-row"><div class="legend-line" style="background:#22c55e"></div>Healthy</div>
+        <div class="legend-row"><div class="legend-line" style="background:#eab308"></div>Medium Risk</div>
+        <div class="legend-row"><div class="legend-line" style="background:#f97316"></div>High Alert</div>
+        <div class="legend-row"><div class="legend-line" style="background:#ef4444;animation:pipePulse 1.2s infinite"></div>Critical</div>
+        <div class="legend-row"><div class="legend-line" style="background:#64748b;opacity:.6"></div>Inactive</div>
+      </div>
+    </div>
+
+    <!-- RIGHT DETAIL PANEL -->
+    <div class="right-panel">
+      <div class="detail-header">
+        <div class="detail-zone" id="detailZone">Kasba Peth — Seg. 7</div>
+        <div class="detail-sub" id="detailSub">Underground Water Main · Cast Iron</div>
+        <div class="detail-badges">
+          <span class="dbadge critical" id="detailSevBadge">● CRITICAL</span>
+          <span class="dbadge burst" id="detailTypeBadge">Pipe Burst</span>
+          <span class="dbadge ibm">watsonx.ai</span>
+        </div>
+      </div>
+
+      <div class="detail-body" id="detailBody">
+        <div class="section-head">AI Detection</div>
+        <div class="kv-row"><span class="k">Confidence</span><span class="v ok">92%</span></div>
+        <div class="kv-row"><span class="k">Est. Loss</span><span class="v danger">1,200 L/hr</span></div>
+        <div class="kv-row"><span class="k">Detected At</span><span class="v">02:14 AM</span></div>
+        <div class="kv-row"><span class="k">IBM Model</span><span class="v" style="color:#38bdf8">Granite TS</span></div>
+
+        <div class="section-head">Sensor Readings</div>
+        <div class="kv-row"><span class="k">Pressure</span><span class="v danger">28 PSI ↓ (was 65)</span></div>
+        <div class="kv-row"><span class="k">Flow Rate</span><span class="v warn">+340 L/min spike</span></div>
+        <div class="kv-row"><span class="k">pH</span><span class="v ok">7.2 (Normal)</span></div>
+        <div class="kv-row"><span class="k">Turbidity</span><span class="v ok">0.8 NTU ✓</span></div>
+        <div class="kv-row"><span class="k">Contamination</span><span class="v ok">CLEAN</span></div>
+
+        <div class="section-head">Pipe Metadata</div>
+        <div class="kv-row"><span class="k">Material</span><span class="v warn">Cast Iron (High Risk)</span></div>
+        <div class="kv-row"><span class="k">Age</span><span class="v warn">71 years</span></div>
+        <div class="kv-row"><span class="k">Diameter</span><span class="v">150 mm</span></div>
+        <div class="kv-row"><span class="k">Last Maintained</span><span class="v warn">2019</span></div>
+        <div class="kv-row"><span class="k">Risk Score</span><span class="v danger">87 / 100</span></div>
+
+        <div class="section-head">PPE Required</div>
+        <div class="ppe-wrap">
+          <span class="ppe-tag">Hard Hat</span>
+          <span class="ppe-tag">Water Gloves</span>
+          <span class="ppe-tag">Safety Boots</span>
+          <span class="ppe-tag">Reflective Vest</span>
+        </div>
+
+        <div class="section-head">Recommended Actions</div>
+        <ul class="action-list">
+          <li><div class="action-num">1</div>Close Zone 4 isolation valve immediately</li>
+          <li><div class="action-num">2</div>Excavate at GPS 18.5204°N, 73.8567°E</li>
+          <li><div class="action-num">3</div>Replace damaged 150mm cast iron section</li>
+          <li><div class="action-num">4</div>Pressure test at 80 PSI before reopening</li>
+        </ul>
+      </div>
+
+      <div class="assign-section">
+        <div class="assign-label">Assign Repair Crew</div>
+        <select class="assign-select" id="crewSelect">
+          <option>— Select crew member —</option>
+          <option>Raj Kumar · Zone 4 (Available)</option>
+          <option>Meera Singh · Zone 7 (Available)</option>
+          <option>Arjun Patil · Zone 2 (On-Site)</option>
+          <option>Sunita Deshpande · Zone 5 (Available)</option>
+        </select>
+        <button class="assign-btn" onclick="dispatchCrew()">⚡ Dispatch Crew</button>
+      </div>
+
+      <div class="chat-section">
+        <div class="chat-head">
+          <span style="font-size:14px">⬡</span>
+          <span class="chat-head-title">Ask watsonx Assistant</span>
+          <span class="chat-head-sub">IBM RAG · Grounded</span>
+        </div>
+        <div class="chat-messages" id="chatMessages">
+          <div class="chat-msg bot"><span>Zone 4 (Kasba Peth) has the most critical issue — Segment 7 burst at 2:14 AM, est. 1,200 L/hr loss. 71yr cast iron pipe. Dispatch immediately.</span></div>
+        </div>
+        <div class="chat-input-row">
+          <input class="chat-input" id="chatInput" type="text" placeholder="Ask about any zone or alert…" onkeydown="if(event.key==='Enter')sendChat()">
+          <button class="chat-send" onclick="sendChat()">Ask</button>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+// ── PIPE METADATA (for tooltip on hover) ─────────────────────────────────
+const pipeMeta = {
+  7:  { name:'Kasba Peth Main',   zone:'Kasba Peth',   status:'critical', material:'Cast Iron',   age:'71 yrs', risk:'87/100' },
+  8:  { name:'Kasba East Line',   zone:'Kasba Peth',   status:'healthy',  material:'PVC',          age:'45 yrs', risk:'30/100' },
+  9:  { name:'Kasba South',       zone:'Kasba Peth',   status:'healthy',  material:'Ductile Iron', age:'38 yrs', risk:'25/100' },
+  5:  { name:'Pimpri Main Line',  zone:'Pimpri',       status:'high',     material:'Cast Iron',   age:'55 yrs', risk:'73/100' },
+  6:  { name:'Pimpri North',      zone:'Pimpri',       status:'healthy',  material:'HDPE',         age:'22 yrs', risk:'18/100' },
+  19: { name:'Pimpri West',       zone:'Pimpri',       status:'medium',   material:'Cast Iron',   age:'48 yrs', risk:'62/100' },
+  20: { name:'Pimpri East',       zone:'Pimpri',       status:'healthy',  material:'HDPE',         age:'15 yrs', risk:'12/100' },
+  3:  { name:'Chinchwad Main',    zone:'Chinchwad',    status:'resolved', material:'Cast Iron',   age:'60 yrs', risk:'40/100' },
+  4:  { name:'Chinchwad South',   zone:'Chinchwad',    status:'healthy',  material:'Ductile Iron', age:'28 yrs', risk:'22/100' },
+  12: { name:'Akurdi Main',       zone:'Akurdi',       status:'high',     material:'Cast Iron',   age:'52 yrs', risk:'78/100' },
+  13: { name:'Akurdi North',      zone:'Akurdi',       status:'healthy',  material:'PVC',          age:'18 yrs', risk:'15/100' },
+  14: { name:'Akurdi South',      zone:'Akurdi',       status:'healthy',  material:'Ductile Iron', age:'30 yrs', risk:'28/100' },
+  23: { name:'Nigdi Central',     zone:'Nigdi',        status:'medium',   material:'Cast Iron',   age:'50 yrs', risk:'65/100' },
+  24: { name:'Nigdi East',        zone:'Nigdi',        status:'healthy',  material:'HDPE',         age:'12 yrs', risk:'10/100' },
+  1:  { name:'Shivajinagar Main', zone:'Shivajinagar', status:'healthy',  material:'Ductile Iron', age:'35 yrs', risk:'32/100' },
+  2:  { name:'FC Road Line',      zone:'Shivajinagar', status:'healthy',  material:'PVC',          age:'20 yrs', risk:'18/100' },
+  15: { name:'Kothrud Main',      zone:'Kothrud',      status:'healthy',  material:'Ductile Iron', age:'25 yrs', risk:'22/100' },
+  16: { name:'Karve Road',        zone:'Kothrud',      status:'healthy',  material:'Cast Iron',   age:'32 yrs', risk:'38/100' },
+  17: { name:'Hadapsar Main',     zone:'Hadapsar',     status:'healthy',  material:'HDPE',         age:'18 yrs', risk:'15/100' },
+  18: { name:'Magarpatta Line',   zone:'Hadapsar',     status:'healthy',  material:'PVC',          age:'10 yrs', risk:'8/100' },
+  25: { name:'Trunk Main A',      zone:'Trunk',        status:'healthy',  material:'Ductile Iron', age:'40 yrs', risk:'35/100' },
+  26: { name:'Trunk Main B',      zone:'Trunk',        status:'healthy',  material:'Ductile Iron', age:'38 yrs', risk:'33/100' },
+  27: { name:'Trunk Main C',      zone:'Trunk',        status:'healthy',  material:'Cast Iron',   age:'42 yrs', risk:'48/100' },
+  28: { name:'Trunk Main D',      zone:'Trunk',        status:'healthy',  material:'Ductile Iron', age:'30 yrs', risk:'28/100' },
+};
+
+const statusColor = {
+  critical:'#ef4444', high:'#f97316', medium:'#eab308',
+  healthy:'#22c55e',  resolved:'#64748b'
+};
+
+// ── PIPE TOOLTIP ON HOVER ─────────────────────────────────────────────────
+const tip = document.getElementById('pipeTip');
+const mapWrap = document.getElementById('mapWrap');
+
+document.querySelectorAll('#svg-pipes line[id^="pipe-"]').forEach(el => {
+  const idStr = el.id.replace('pipe-','').replace('-glow','');
+  if(idStr.includes('glow')) return;
+  const id = parseInt(idStr);
+  const m = pipeMeta[id];
+  if(!m) return;
+  el.addEventListener('mouseenter', e => {
+    document.getElementById('ptTitle').textContent = m.name;
+    document.getElementById('ptSub').textContent = m.zone;
+    const sc = m.status;
+    const sv = document.getElementById('ptStatus');
+    sv.textContent = sc.toUpperCase();
+    sv.className = 'pt-v ' + (sc==='critical'||sc==='high'?'red':sc==='healthy'||sc==='resolved'?'ok':'');
+    document.getElementById('ptMat').textContent = m.material;
+    const rv = document.getElementById('ptAge');
+    rv.textContent = m.age;
+    rv.className = 'pt-v ' + (parseInt(m.age)>50?'red':'');
+    const rsk = document.getElementById('ptRisk');
+    rsk.textContent = m.risk;
+    rsk.className = 'pt-v ' + (parseInt(m.risk)>70?'red':'');
+    tip.style.display = 'block';
+    positionTip(e);
+  });
+  el.addEventListener('mousemove', positionTip);
+  el.addEventListener('mouseleave', () => { tip.style.display = 'none'; });
+});
+
+function positionTip(e) {
+  const rect = mapWrap.getBoundingClientRect();
+  let x = e.clientX - rect.left + 14;
+  let y = e.clientY - rect.top + 14;
+  if(x + 210 > rect.width) x = e.clientX - rect.left - 220;
+  if(y + 130 > rect.height) y = e.clientY - rect.top - 140;
+  tip.style.left = x + 'px';
+  tip.style.top = y + 'px';
+}
+
+// ── LAYER TOGGLES (SVG group show/hide) ───────────────────────────────────
+const layerState = { pipes:true, alerts:true, risk:false, zones:false };
+const layerGroups = {
+  pipes: 'svg-pipes',
+  alerts: 'svg-alerts',
+  zones: 'svg-zones',
+};
+
+function toggleLayer(name) {
+  layerState[name] = !layerState[name];
+  const btn = document.getElementById('btn' + name.charAt(0).toUpperCase() + name.slice(1));
+  btn.classList.toggle('active', layerState[name]);
+  if(name === 'risk') {
+    // No risk heatmap SVG layer — just visual feedback
+    return;
+  }
+  const groupId = layerGroups[name];
+  if(groupId) {
+    const g = document.getElementById(groupId);
+    if(g) g.style.display = layerState[name] ? '' : 'none';
+  }
+}
+
+// ── HIGHLIGHT RING ON MAP ─────────────────────────────────────────────────
+// Map of alertData id → SVG pin centre coords
+const pinCoords = {
+  1: [411, 330],
+  2: [675, 119],
+  3: [607, 162],
+  4: [597, 174],
+  5: [708,  94],
+  6: null,
+  7: null,
+};
+
+function highlightPin(id) {
+  const hl = document.getElementById('map-highlight');
+  const coords = pinCoords[id];
+  if(coords) {
+    hl.setAttribute('cx', coords[0]);
+    hl.setAttribute('cy', coords[1]);
+  } else {
+    hl.setAttribute('cx', -999);
+    hl.setAttribute('cy', -999);
+  }
+}
+
+// ── ALERT DATA ────────────────────────────────────────────────────────────
+const alertData = {
+  1: { zone:'Kasba Peth — Seg. 7',  sub:'Underground Water Main · Cast Iron',  sev:'CRITICAL', sevClass:'critical', type:'Pipe Burst',              conf:'92%', loss:'1,200 L/hr',   pres:'28 PSI ↓', flow:'+340 L/min spike', ph:'7.2 (Normal)',            turb:'0.8 NTU ✓',  contam:'CLEAN',       mat:'Cast Iron',   age:'71 years', diam:'150 mm', maint:'2019', riskScore:'87/100', ppe:['Hard Hat','Water Gloves','Safety Boots','Reflective Vest'],            actions:['Close Zone 4 isolation valve immediately','Excavate at GPS 18.5204°N, 73.8567°E','Replace damaged 150mm cast iron section','Pressure test at 80 PSI before reopening'] },
+  2: { zone:'Akurdi — Seg. 12',     sub:'Distribution Main · Cast Iron',        sev:'HIGH',     sevClass:'high',     type:'Bacterial Contamination', conf:'87%', loss:'Contamination', pres:'52 PSI',   flow:'Normal',           ph:'5.6 ↓ (WHO min 6.5)',     turb:'6.2 NTU ↑',  contam:'BACTERIAL',   mat:'Cast Iron',   age:'52 years', diam:'100 mm', maint:'2021', riskScore:'78/100', ppe:['Full Face Shield','Chemical Gloves','Hazmat Suit','Safety Boots'],        actions:['Isolate Akurdi segment valve','Do NOT flush — bacterial protocol','Apply chlorination treatment','Retest water quality before reopening'] },
+  3: { zone:'Pimpri — Seg. 5',      sub:'Water Main · Cast Iron',               sev:'HIGH',     sevClass:'high',     type:'Pipe Burst',              conf:'81%', loss:'820 L/hr',      pres:'31 PSI ↓', flow:'+210 L/min spike', ph:'7.0 (Normal)',            turb:'0.9 NTU ✓',  contam:'CLEAN',       mat:'Cast Iron',   age:'55 years', diam:'125 mm', maint:'2020', riskScore:'73/100', ppe:['Hard Hat','Water Gloves','Safety Boots'],                                 actions:['Close Pimpri Zone B valve','Excavate near Pimpri Main intersection','Replace 125mm cast iron section','Pressure test at 70 PSI'] },
+  4: { zone:'Pimpri — Seg. 19',     sub:'Distribution Line · Cast Iron',        sev:'MEDIUM',   sevClass:'medium',   type:'Chemical Runoff',         conf:'74%', loss:'Contamination', pres:'58 PSI',   flow:'Normal',           ph:'6.1 ↓ (slightly low)',    turb:'2.1 NTU ↑',  contam:'CHEMICAL',    mat:'Cast Iron',   age:'48 years', diam:'80 mm',  maint:'2022', riskScore:'62/100', ppe:['Chemical Gloves','Safety Goggles','Reflective Vest'],                     actions:['Isolate segment temporarily','Test for specific chemical contaminants','Notify PCMC Health Officer','Flush and retest — WHO limits apply'] },
+  5: { zone:'Nigdi — Seg. 23',      sub:'Service Line · Cast Iron',             sev:'MEDIUM',   sevClass:'medium',   type:'Heavy Metal Detected',    conf:'70%', loss:'Contamination', pres:'55 PSI',   flow:'Normal',           ph:'7.4 (Normal)',            turb:'1.8 NTU ↑',  contam:'HEAVY METAL', mat:'Cast Iron',   age:'50 years', diam:'80 mm',  maint:'2020', riskScore:'65/100', ppe:['Full Face Shield','Heavy-Duty Gloves','Hazmat Suit'],                     actions:['Do NOT flush — heavy metal protocol','Isolate Nigdi segment immediately','Call specialist heavy metals team','Test lead, arsenic, mercury levels'] },
+  6: { zone:'Chinchwad — Seg. 3',   sub:'Water Main · Cast Iron',               sev:'RESOLVED', sevClass:'burst',    type:'Pipe Burst',              conf:'95%', loss:'0 (Fixed)',      pres:'64 PSI',   flow:'Normal',           ph:'7.1 (Normal)',            turb:'0.7 NTU ✓',  contam:'CLEAN',       mat:'Cast Iron',   age:'60 years', diam:'125 mm', maint:'2024', riskScore:'40/100', ppe:['Hard Hat','Safety Boots'],                                                actions:['Pipe replaced successfully','Pressure tested at 70 PSI','Segment reopened to service','Scheduled for annual inspection'] },
+  7: { zone:'Akurdi — Seg. 8',      sub:'Distribution Main · Cast Iron',        sev:'RESOLVED', sevClass:'burst',    type:'Bacterial Contamination', conf:'93%', loss:'0 (Cleared)',   pres:'53 PSI',   flow:'Normal',           ph:'7.0 (Normal)',            turb:'0.6 NTU ✓',  contam:'CLEAN',       mat:'Cast Iron',   age:'48 years', diam:'100 mm', maint:'2024', riskScore:'35/100', ppe:['Safety Boots'],                                                           actions:['Chlorination treatment completed','Retested — WHO standards met','Segment reopened','Follow-up inspection in 7 days'] },
+};
+
+function selectAlert(id, el) {
+  document.querySelectorAll('.alert-item').forEach(x => x.classList.remove('selected'));
+  if(el) el.classList.add('selected');
+  const d = alertData[id];
+  if(!d) return;
+  document.getElementById('detailZone').textContent = d.zone;
+  document.getElementById('detailSub').textContent = d.sub;
+  document.getElementById('detailSevBadge').textContent = '● ' + d.sev;
+  document.getElementById('detailSevBadge').className = 'dbadge ' + d.sevClass;
+  document.getElementById('detailTypeBadge').textContent = d.type;
+  document.getElementById('detailBody').innerHTML = `
+    <div class="section-head">AI Detection</div>
+    <div class="kv-row"><span class="k">Confidence</span><span class="v ok">${d.conf}</span></div>
+    <div class="kv-row"><span class="k">Est. Loss</span><span class="v danger">${d.loss}</span></div>
+    <div class="kv-row"><span class="k">IBM Model</span><span class="v" style="color:#38bdf8">Granite TS + AutoAI</span></div>
+    <div class="section-head">Sensor Readings</div>
+    <div class="kv-row"><span class="k">Pressure</span><span class="v ${d.pres.includes('↓')?'danger':'ok'}">${d.pres}</span></div>
+    <div class="kv-row"><span class="k">Flow Rate</span><span class="v ${d.flow.includes('spike')?'warn':'ok'}">${d.flow}</span></div>
+    <div class="kv-row"><span class="k">pH</span><span class="v ${d.ph.includes('↓')?'danger':'ok'}">${d.ph}</span></div>
+    <div class="kv-row"><span class="k">Turbidity</span><span class="v ${d.turb.includes('↑')?'warn':'ok'}">${d.turb}</span></div>
+    <div class="kv-row"><span class="k">Contamination</span><span class="v ${d.contam==='CLEAN'?'ok':'danger'}">${d.contam}</span></div>
+    <div class="section-head">Pipe Metadata</div>
+    <div class="kv-row"><span class="k">Material</span><span class="v warn">${d.mat}</span></div>
+    <div class="kv-row"><span class="k">Age</span><span class="v ${parseInt(d.age)>50?'warn':'ok'}">${d.age}</span></div>
+    <div class="kv-row"><span class="k">Diameter</span><span class="v">${d.diam}</span></div>
+    <div class="kv-row"><span class="k">Last Maintained</span><span class="v warn">${d.maint}</span></div>
+    <div class="kv-row"><span class="k">Risk Score</span><span class="v ${parseInt(d.riskScore)>70?'danger':'warn'}">${d.riskScore}</span></div>
+    <div class="section-head">PPE Required</div>
+    <div class="ppe-wrap">${d.ppe.map(p=>`<span class="ppe-tag">${p}</span>`).join('')}</div>
+    <div class="section-head">Recommended Actions</div>
+    <ul class="action-list">${d.actions.map((a,i)=>`<li><div class="action-num">${i+1}</div>${a}</li>`).join('')}</ul>
+  `;
+  highlightPin(id);
+}
+
+// ── CHAT ──────────────────────────────────────────────────────────────────
+const chatResponses = {
+  'zone 4':        'Zone 4 (Kasba Peth) has a CRITICAL burst on Segment 7 — est. 1,200 L/hr loss. 71yr cast iron pipe. Risk score: 87/100. Dispatch crew immediately.',
+  'water lost':    'Today\'s estimated total loss: 4,200 L/hr across 3 active alerts. Projected daily loss: ~100,800 litres. Kasba Peth accounts for 28% of total loss.',
+  'contamination': 'Two contamination events active: Bacterial (Akurdi Seg.12, pH 5.6) and Chemical Runoff (Pimpri Seg.19, pH 6.1). Akurdi is more critical — isolate first.',
+  'critical':      'Most critical alert: Segment 7, Kasba Peth. 71-year-old cast iron pipe, pressure dropped 37 PSI in 90 seconds. IBM Granite confidence: 92%. Recommend immediate isolation.',
+  'default':       'watsonx.ai is monitoring all 28 active pipe segments across Pune PCMC. 3 critical, 5 high alerts active. Use IBM App Connect to trigger automated reports.'
+};
+function sendChat() {
+  const input = document.getElementById('chatInput');
+  const q = input.value.trim();
+  if(!q) return;
+  const msgs = document.getElementById('chatMessages');
+  msgs.innerHTML += `<div class="chat-msg user"><span>${q}</span></div>`;
+  const key = Object.keys(chatResponses).find(k => q.toLowerCase().includes(k)) || 'default';
+  setTimeout(() => {
+    msgs.innerHTML += `<div class="chat-msg bot"><span>${chatResponses[key]}</span></div>`;
+    msgs.scrollTop = msgs.scrollHeight;
+  }, 600);
+  input.value = '';
+  msgs.scrollTop = msgs.scrollHeight;
+}
+
+function dispatchCrew() {
+  const sel = document.getElementById('crewSelect');
+  if(sel.value.startsWith('—')) { alert('Please select a crew member first.'); return; }
+  const btn = document.querySelector('.assign-btn');
+  btn.textContent = '✓ Dispatched — ' + sel.value.split('·')[0].trim();
+  btn.style.background = 'linear-gradient(135deg,#166534,#15803d)';
+}
+</script>
+</body>
+</html>
