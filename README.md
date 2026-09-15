@@ -15,7 +15,7 @@ FLOWGEN
 
 > In 2–3 sentences: What problem does your project solve? Who experiences this problem?
 
-[Describe the real-world problem your project addresses. Be specific about who the user is and what pain point they face.]
+[Municipalities lose up to 30% of their treated drinking water due to undetected underground pipe bursts, costing cities billions. Worse, localized water contamination—such as chemical runoff, heavy metals, or bacterial growth—often goes unnoticed until citizens get sick. City operators lack a unified view to cross-reference hydraulic pressure drops with chemical sensor spikes, resulting in slow and disorganized containment responses.]
 
 ---
 
