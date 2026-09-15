@@ -3,7 +3,7 @@ FLOWGEN AI
 FLOWGEN
 
 | **Team Name** | FLOWGEN |
-| **Track** | AI  |
+| **Track** | AI |
 | **Team Lead** | DRUPAD — dhrupadkewlani52@gmail.com |
 | **Members** | NAMRA, MANTHAN, ANUJ |
 
